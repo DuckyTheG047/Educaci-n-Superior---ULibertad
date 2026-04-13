@@ -12,6 +12,7 @@ from BMK_UL import (
     load_campo_amplio_result,
     normalize_campus_name,
     save_processed_snapshot,
+    standardize_campus_names,
     _normalize_text,
 )
 
@@ -23,6 +24,29 @@ st.set_page_config(
 
 
 LOGO_URL = "https://media.ulibertad.edu.mx/nimda/Umbraco/logo_ul_svg.svg"
+INSTITUTION_LOGOS = {
+    "Tecnológico de Monterrey": "https://www.google.com/s2/favicons?domain=tec.mx&sz=128",
+    "Universidad Iberoamericana": "https://www.google.com/s2/favicons?domain=ibero.mx&sz=128",
+    "Instituto Tecnológico Autónomo de México": "https://www.google.com/s2/favicons?domain=itam.mx&sz=128",
+    "Universidad Anáhuac": "https://www.google.com/s2/favicons?domain=anahuac.mx&sz=128",
+    "Universidad Panamericana": "https://www.google.com/s2/favicons?domain=up.edu.mx&sz=128",
+    "Universidad de Monterrey": "https://www.google.com/s2/favicons?domain=udem.edu.mx&sz=128",
+    "Universidad de las Américas Puebla": "https://www.google.com/s2/favicons?domain=udlap.mx&sz=128",
+    "Instituto Tecnológico y de Estudios Superiores de Occidente": "https://www.google.com/s2/favicons?domain=iteso.mx&sz=128",
+    "Universidad Tecmilenio": "https://www.google.com/s2/favicons?domain=tecmilenio.mx&sz=128",
+    "Universidad del Valle de México": "https://www.google.com/s2/favicons?domain=uvm.mx&sz=128",
+    "Universidad La Salle": "https://www.lasalle.mx/somos-la-salle/identidad/Code/templates/images/global/La-Salle-Placeholder-Small.jpg",
+    "Universidad Nacional Autónoma de México": "https://www.google.com/s2/favicons?domain=unam.mx&sz=128",
+    "Instituto Politécnico Nacional": "https://www.google.com/s2/favicons?domain=ipn.mx&sz=128",
+    "Universidad de Guadalajara": "https://www.google.com/s2/favicons?domain=udg.mx&sz=128",
+    "Universidad Autónoma de Nuevo León": "https://www.google.com/s2/favicons?domain=uanl.mx&sz=128",
+    "Universidad Autónoma del Estado de México": "https://www.google.com/s2/favicons?domain=uaemex.mx&sz=128",
+    "Benemérita Universidad Autónoma de Puebla": "https://www.google.com/s2/favicons?domain=buap.mx&sz=128",
+    "Universidad Autónoma de Querétaro": "https://www.uaq.mx/favicon.ico",
+    "Universidad Autónoma de Baja California": "https://www.uabc.mx/favicon.ico",
+    "Universidad Autónoma de Yucatán": "https://www.google.com/s2/favicons?domain=uady.mx&sz=128",
+    "Universidad de la Libertad": "https://www.google.com/s2/favicons?domain=ulibertad.edu.mx&sz=128",
+}
 
 
 st.markdown(
@@ -129,16 +153,19 @@ st.markdown(
     """
     <style>
         .institution-card {
-            background: rgba(255, 255, 255, 0.82);
-            border: 1px solid rgba(15, 23, 42, 0.08);
+            background: #000000;
+            border: 1px solid rgba(255, 255, 255, 0.12);
             border-radius: 18px;
             padding: 0.9rem 1rem;
-            box-shadow: 0 14px 32px rgba(15, 23, 42, 0.06);
-            min-height: 132px;
+            box-shadow: 0 16px 34px rgba(15, 23, 42, 0.14);
+            min-height: 156px;
+            margin-bottom: 0.9rem;
+            position: relative;
+            overflow: hidden;
         }
 
         .institution-card .inst-type {
-            color: #7a7a7a;
+            color: #9ca3af;
             font-size: 0.75rem;
             text-transform: uppercase;
             letter-spacing: 0.04em;
@@ -146,7 +173,7 @@ st.markdown(
         }
 
         .institution-card .inst-name {
-            color: #111827;
+            color: #ffffff;
             font-size: 1rem;
             font-weight: 700;
             line-height: 1.2;
@@ -154,7 +181,7 @@ st.markdown(
         }
 
         .institution-card .inst-metric {
-            color: #1f2937;
+            color: #f3f4f6;
             font-size: 0.9rem;
             margin-bottom: 0.2rem;
         }
@@ -162,24 +189,27 @@ st.markdown(
         .institution-card .inst-metric strong {
             font-size: 1.05rem;
         }
+
+        .institution-card.neon-highlight {
+            border-width: 2px;
+        }
+
+        .institution-card .inst-logo {
+            position: absolute;
+            right: 14px;
+            bottom: 12px;
+            width: 34px;
+            height: 34px;
+            object-fit: contain;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.96);
+            padding: 4px;
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.28);
+        }
     </style>
     """,
     unsafe_allow_html=True,
 )
-
-st.markdown(
-    """
-    <div class="hero-card">
-        <h2>Evolucion total de la matricula por institucion</h2>
-        <p>
-            Vista inicial del benchmark historico de ANUIES para universidades objetivo.
-            La grafica suma la matricula total de cada institucion por ciclo escolar.
-        </p>
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
-
 
 DATA_SCHEMA_VERSION = "campo_especifico_v2_entidad"
 MEXICO_STATES_GEOJSON_URL = "https://raw.githubusercontent.com/angelnmara/geojson/master/mexicoHigh.json"
@@ -265,6 +295,19 @@ matched = payload["matched"]
 missing = payload["missing"]
 data_source = payload.get("data_source", "anuies")
 
+st.markdown(
+    """
+    <div class="hero-card">
+        <h2>Evolucion total de la matricula por institucion</h2>
+        <p>
+            Vista inicial del benchmark historico de ANUIES para universidades objetivo.
+            La grafica suma la matricula total de cada institucion por ciclo escolar.
+        </p>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
 if raw_df.empty or chart_df.empty:
     st.warning("No se encontraron registros para las universidades objetivo.")
     st.stop()
@@ -276,6 +319,20 @@ if not required_chart_columns.issubset(set(chart_df.columns)):
         "Haz clic en 'Actualizar desde ANUIES' o reinicia Streamlit."
     )
     st.stop()
+
+cycle_options = (
+    raw_df[["ciclo", "ciclo_inicio"]]
+    .drop_duplicates()
+    .sort_values("ciclo_inicio")
+)
+all_cycles = cycle_options["ciclo"].tolist()
+default_cycle_range = (all_cycles[0], all_cycles[-1])
+
+selected_cycle_range = st.select_slider(
+    "Rango de ciclos",
+    options=all_cycles,
+    value=default_cycle_range,
+)
 
 institution_options = sorted(raw_df["universidad_objetivo"].dropna().unique().tolist())
 institution_default = institution_options
@@ -318,6 +375,13 @@ with st.sidebar:
         )
 
 filtered_raw_df = raw_df.copy()
+selected_start_cycle, selected_end_cycle = selected_cycle_range
+selected_cycle_values = cycle_options.loc[
+    (cycle_options["ciclo_inicio"] >= int(selected_start_cycle.split("-")[0]))
+    & (cycle_options["ciclo_inicio"] <= int(selected_end_cycle.split("-")[0])),
+    "ciclo",
+].tolist()
+filtered_raw_df = filtered_raw_df.loc[filtered_raw_df["ciclo"].isin(selected_cycle_values)]
 if selected_institutions:
     filtered_raw_df = filtered_raw_df.loc[
         filtered_raw_df["universidad_objetivo"].isin(selected_institutions)
@@ -335,6 +399,8 @@ if filtered_raw_df.empty:
     st.warning("No hay datos con los filtros seleccionados.")
     st.stop()
 
+standardized_raw_df = standardize_campus_names(filtered_raw_df)
+
 filtered_chart_df = (
     filtered_raw_df.groupby(
         ["universidad_objetivo", "ciclo_inicio", "ciclo"],
@@ -346,6 +412,10 @@ filtered_chart_df = (
 
 filtered_campus_points_df = campus_points_df.copy()
 if not filtered_campus_points_df.empty:
+    if selected_cycle_values and "ciclo" in filtered_campus_points_df.columns:
+        filtered_campus_points_df = filtered_campus_points_df.loc[
+            filtered_campus_points_df["ciclo"].isin(selected_cycle_values)
+        ]
     if selected_institutions:
         filtered_campus_points_df = filtered_campus_points_df.loc[
             filtered_campus_points_df["universidad_objetivo"].isin(selected_institutions)
@@ -358,6 +428,10 @@ if not filtered_campus_points_df.empty:
         filtered_campus_points_df = filtered_campus_points_df.loc[
             filtered_campus_points_df["campo_especifico"].isin(selected_campos)
         ]
+    filtered_campus_points_df = standardize_campus_names(filtered_campus_points_df)
+    filtered_campus_points_df = filtered_campus_points_df.drop_duplicates(
+        subset=["universidad_objetivo", "entidad", "campus_normalizado"]
+    )
 
 figure = px.line(
     filtered_chart_df,
@@ -427,13 +501,56 @@ with gender_and_cards_left:
     )
     st.plotly_chart(pie_fig, use_container_width=True)
 
+    age_columns = {
+        "TOT_17": "≤17",
+        "TOT_18": "18",
+        "TOT_19": "19",
+        "TOT_20": "20",
+        "TOT_21": "21",
+        "TOT_22": "22",
+        "TOT_23": "23",
+        "TOT_24": "24",
+        "TOT_25": "25",
+        "TOT_26": "26",
+        "TOT_27": "27",
+        "TOT_28": "28",
+        "TOT_29": "29",
+        "TOT_30_34": "30-34",
+        "TOT_35_39": "35-39",
+        "TOT_40": "40+",
+    }
+    available_age_columns = [column for column in age_columns if column in filtered_raw_df.columns]
+    if available_age_columns:
+        age_df = pd.DataFrame(
+            {
+                "edad": [age_columns[column] for column in available_age_columns],
+                "matricula": [float(filtered_raw_df[column].sum()) for column in available_age_columns],
+            }
+        )
+        age_df = age_df.loc[age_df["matricula"] > 0]
+        if not age_df.empty:
+            age_df["grupo"] = "Edades"
+            treemap_fig = px.treemap(
+                age_df,
+                path=["grupo", "edad"],
+                values="matricula",
+                color="matricula",
+                color_continuous_scale="Blues",
+            )
+            treemap_fig.update_layout(
+                title="Distribucion de matricula por edad",
+                margin=dict(l=0, r=0, t=50, b=0),
+                paper_bgcolor="rgba(0,0,0,0)",
+                coloraxis_colorbar_title="Matricula",
+            )
+            st.plotly_chart(treemap_fig, use_container_width=True)
+
 campus_card_df = (
-    filtered_raw_df[["universidad_objetivo", "tipo_institucion", "campus"]]
+    standardized_raw_df[["universidad_objetivo", "tipo_institucion", "campus", "campus_normalizado"]]
     .dropna()
     .assign(
         tipo_institucion=lambda df: df["tipo_institucion"].astype(str).str.strip(),
         campus=lambda df: df["campus"].astype(str).str.strip(),
-        campus_normalizado=lambda df: df["campus"].map(normalize_campus_name),
     )
 )
 campus_card_df = campus_card_df.loc[campus_card_df["campus"] != ""]
@@ -452,8 +569,18 @@ institution_summary = (
         how="left",
     )
     .fillna({"campus_count": 0})
-    .sort_values("matricula_total", ascending=False)
 )
+institution_summary["card_order"] = institution_summary["universidad_objetivo"].eq(
+    "Universidad de la Libertad"
+).map({True: 0, False: 1})
+institution_summary = institution_summary.sort_values(
+    ["card_order", "matricula_total"],
+    ascending=[True, False],
+).drop(columns="card_order")
+top_institutions = set(
+    institution_summary.nlargest(5, "matricula_total")["universidad_objetivo"].tolist()
+)
+top_institutions.add("Universidad de la Libertad")
 
 with gender_and_cards_right:
     st.subheader("Resumen por institucion")
@@ -461,13 +588,32 @@ with gender_and_cards_right:
     for idx, (_, row) in enumerate(institution_summary.iterrows()):
         column = card_columns[idx % 3]
         with column:
+            is_highlighted = row["universidad_objetivo"] in top_institutions
+            neon_color = (
+                "#FFD100"
+                if row["universidad_objetivo"] == "Universidad de la Libertad"
+                else INSTITUTION_COLORS.get(row["universidad_objetivo"], "#ffffff")
+            )
+            extra_class = " neon-highlight" if is_highlighted else ""
+            extra_style = (
+                f"border-color: {neon_color}; box-shadow: 0 0 10px {neon_color}, 0 0 24px {neon_color};"
+                if is_highlighted
+                else ""
+            )
+            logo_url = INSTITUTION_LOGOS.get(row["universidad_objetivo"], "")
+            logo_html = (
+                f'<img class="inst-logo" src="{logo_url}" alt="{row["universidad_objetivo"]}">'
+                if logo_url
+                else ""
+            )
             st.markdown(
                 f"""
-                <div class="institution-card">
+                <div class="institution-card{extra_class}" style="{extra_style}">
                     <div class="inst-type">{row["tipo_institucion"]}</div>
                     <div class="inst-name">{row["universidad_objetivo"]}</div>
                     <div class="inst-metric">Matricula total: <strong>{int(row["matricula_total"]):,}</strong></div>
                     <div class="inst-metric">Campus unicos: <strong>{int(row["campus_count"])}</strong></div>
+                    {logo_html}
                 </div>
                 """,
                 unsafe_allow_html=True,
@@ -486,12 +632,11 @@ with map_right:
 
 if {"entidad", "campus", "universidad_objetivo"}.issubset(filtered_raw_df.columns):
     campus_state_df = (
-        filtered_raw_df[["universidad_objetivo", "entidad", "campus"]]
+        standardized_raw_df[["universidad_objetivo", "entidad", "campus", "campus_normalizado"]]
         .dropna()
         .assign(
             entidad=lambda df: df["entidad"].astype(str).str.strip(),
             campus=lambda df: df["campus"].astype(str).str.strip(),
-            campus_normalizado=lambda df: df["campus"].map(normalize_campus_name),
         )
     )
     campus_state_df = campus_state_df.loc[

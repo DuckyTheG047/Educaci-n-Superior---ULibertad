@@ -222,31 +222,347 @@ def _cache_path(cache_name: str) -> Path:
     return CACHE_DIR / cache_name
 
 
+def _alias_to_pattern(alias: str) -> str:
+    normalized_alias = _normalize_text(alias)
+    if re.fullmatch(r"[A-Z0-9 ]{2,8}", normalized_alias):
+        return rf"(?<![A-Z0-9]){re.escape(normalized_alias)}(?![A-Z0-9])"
+    return re.escape(normalized_alias)
+
+
 UNIVERSITY_PATTERNS = {
-    university: "|".join(re.escape(_normalize_text(alias)) for alias in aliases)
+    university: "|".join(_alias_to_pattern(alias) for alias in aliases)
     for university, aliases in UNIVERSITY_ALIASES.items()
 }
 
 
-def normalize_campus_name(value: object) -> str:
+SITE_LABELS = [
+    "CORDOBA ORIZABA",
+    "CIUDAD INSURGENTES",
+    "CABO SAN LUCAS",
+    "SAN JUAN DEL RIO",
+    "CENTRO UNIVERSITARIO",
+    "CENTRO HISTORICO",
+    "CIUDAD UNIVERSITARIA",
+    "CIUDAD DE MEXICO",
+    "ESTADO DE MEXICO",
+    "CUAUTITLAN IZCALLI",
+    "GUADALAJARA NORTE",
+    "GUADALAJARA SUR",
+    "GUADALUPE VICTORIA",
+    "CIUDAD JUAREZ",
+    "SAN QUINTIN",
+    "SANTA TERESA",
+    "AGUASCALIENTES",
+    "GUADALAJARA",
+    "QUERETARO",
+    "MONTERREY",
+    "SALTILLO",
+    "IRAPUATO",
+    "CHIHUAHUA",
+    "SANTA FE",
+    "TOLUCA",
+    "MEXICALI",
+    "TAMPICO",
+    "MORELIA",
+    "DURANGO",
+    "HIDALGO",
+    "LAGUNA",
+    "TIJUANA",
+    "PUEBLA",
+    "JALPAN",
+    "AMEALCO",
+    "CADEREYTA",
+    "AEROPUERTO",
+    "AMAZCALA",
+    "JURIQUILLA",
+    "CUERNAVACA",
+    "COYOACAN",
+    "CHAPULTEPEC",
+    "SAN ANGEL",
+    "SAN RAFAEL",
+    "TLALPAN",
+    "ROMA",
+    "COLIMA",
+    "CUMBRES",
+    "FERRERIA",
+    "TEQUISQUIAPAN",
+    "PEDRO ESCOBEDO",
+    "PINAL DE AMOLES",
+    "COACALCO",
+    "LAGO DE GUADALUPE",
+    "LOMAS VERDES",
+    "TEXCOCO",
+    "ZAPOPAN",
+    "VILLA HERMOSA",
+    "VILLAHERMOSA",
+    "NEZAHUALCOYOTL",
+    "PACHUCA",
+    "MORELIA",
+    "CUERNAVACA",
+    "CANCUN",
+    "MAYAB",
+    "MERIDA",
+    "LOS MOCHIS",
+    "MAZATLAN",
+    "HERMOSILLO",
+    "NOGALES",
+    "MATAMOROS",
+    "NUEVO LAREDO",
+    "REYNOSA",
+    "SAN NICOLAS",
+    "LAS TORRES",
+    "CENTRO EJECUTIVO HERMOSILLO",
+    "UNO HERMOSILLO",
+    "SALAMANCA",
+    "BONATERRA",
+    "SAN TELMO",
+    "LEON",
+    "OBREGON",
+    "SONORA NORTE",
+    "SONORA SUR",
+    "GUERRERO NEGRO",
+    "LORETO",
+    "ACATLAN",
+    "ARAGON",
+    "CUAUTITLAN",
+    "IZTACALA",
+    "VERACRUZ",
+    "XALAPA",
+    "CONDESA",
+    "SAN FERNANDO",
+    "CHIAPAS",
+    "VIRTUAL",
+]
+
+INSTITUTION_STATE_ANCHORS = {
+    "Tecnológico de Monterrey": {
+        "NUEVO LEON": "MONTERREY",
+        "PUEBLA": "PUEBLA",
+        "VERACRUZ": "VERACRUZ",
+        "QUERETARO": "QUERETARO",
+    },
+    "Universidad La Salle": {
+        "CHIHUAHUA": "CHIHUAHUA",
+        "COAHUILA": "SALTILLO",
+        "DURANGO": "LAGUNA",
+        "HIDALGO": "PACHUCA",
+        "MICHOACAN": "MORELIA",
+        "MORELOS": "CUERNAVACA",
+        "MEXICO": "NEZAHUALCOYOTL",
+        "OAXACA": "OAXACA",
+        "PUEBLA": "BENAVENTE",
+        "QUINTANA ROO": "CANCUN",
+        "TAMAULIPAS": "VICTORIA",
+    },
+    "Universidad Iberoamericana": {
+        "CIUDAD DE MEXICO": "CIUDAD DE MEXICO",
+        "COAHUILA": "TORREON",
+        "NUEVO LEON": "MONTERREY",
+        "PUEBLA": "PUEBLA",
+    },
+    "Universidad Tecmilenio": {
+        "COLIMA": "COLIMA",
+        "COAHUILA": "LAGUNA",
+        "MORELOS": "CUERNAVACA",
+        "PUEBLA": "PUEBLA",
+        "QUINTANA ROO": "CANCUN",
+        "SAN LUIS POTOSI": "SAN LUIS POTOSI",
+        "TABASCO": "VILLAHERMOSA",
+        "VERACRUZ": "VERACRUZ",
+        "YUCATAN": "MERIDA",
+    },
+    "Universidad del Valle de México": {
+        "AGUASCALIENTES": "AGUASCALIENTES",
+        "BAJA CALIFORNIA": "MEXICALI",
+        "CHIAPAS": "TUXTLA",
+        "CHIHUAHUA": "CHIHUAHUA",
+        "MORELOS": "CUERNAVACA",
+        "PUEBLA": "PUEBLA",
+        "QUERETARO": "QUERETARO",
+        "TABASCO": "VILLA HERMOSA",
+        "YUCATAN": "MERIDA",
+    },
+    "Universidad Panamericana": {
+        "CIUDAD DE MEXICO": "CIUDAD DE MEXICO",
+        "JALISCO": "GUADALAJARA",
+        "MEXICO": "CIUDAD UP",
+    },
+}
+
+GENERIC_CAMPUS_MARKERS = [
+    "DEPARTAMENTO DE",
+    "FACULTAD DE",
+    "ESCUELA DE",
+    "AREA DE",
+    "AREA INTERDISCIPLINARIA",
+    "INSTITUTO DE",
+    "INSTITUTO PANAMERICANO",
+    "CENTRO DE INVESTIGACIONES",
+    "CENTROS E INSTITUTOS",
+    "DIRECCION DE",
+]
+
+
+def _normalize_campus_text(value: object) -> str:
     text = _normalize_text(value)
     text = text.replace("U.A.N.L.", "UANL")
-    text = text.replace("U A N L", "UANL")
     text = text.replace("U.A.N.L", "UANL")
-    text = text.replace("UDEM", "UNIVERSIDAD DE MONTERREY")
+    text = text.replace("U A N L", "UANL")
+    text = text.replace("U.V.M.", "UVM")
+    text = text.replace("CDMX", "CIUDAD DE MEXICO")
+    text = text.replace("MEXICO D F", "CIUDAD DE MEXICO")
+    text = text.replace("MEXICO DF", "CIUDAD DE MEXICO")
+    text = text.replace("MEXICO CITY", "CIUDAD DE MEXICO")
+    text = text.replace("C U", "CIUDAD UNIVERSITARIA")
     text = re.sub(r"[\"'`,.;:()]+", " ", text)
     text = re.sub(r"\s*-\s*", " ", text)
     text = re.sub(r"\s*,\s*", " ", text)
+    text = re.sub(r"\bA C\b", " ", text)
+    text = re.sub(r"\bS C\b", " ", text)
+    text = re.sub(r"\bS DE R L DE C V\b", " ", text)
     text = re.sub(r"\bCAMPUS\b", " ", text)
     text = re.sub(r"\bPLANTEL\b", " ", text)
+    text = re.sub(r"\bSEDE\b", " ", text)
     text = re.sub(r"\bUNIDAD ACADEMICA\b", " ", text)
     text = re.sub(r"\bUNIDAD ACADÉMICA\b", " ", text)
-    text = re.sub(r"\bCENTRO DE EXTENSION\b", "CENTRO DE EXTENSION", text)
-    text = re.sub(r"\bCENTRO DE EXTENSIÓN\b", "CENTRO DE EXTENSION", text)
-    text = re.sub(r"\bDIVISION\b", "DIVISION", text)
-    text = re.sub(r"\bDIVISIÓN\b", "DIVISION", text)
+    text = re.sub(r"\bUNIDAD\b", " ", text)
+    text = re.sub(r"\bEXTENSION\b", " ", text)
+    text = re.sub(r"\bEXTENSIÓN\b", " ", text)
     text = re.sub(r"\s+", " ", text).strip()
     return text
+
+
+def _strip_institution_tokens(
+    text: str,
+    universidad_objetivo: object = None,
+    institucion: object = None,
+) -> str:
+    aliases: list[str] = []
+    university_name = "" if universidad_objetivo is None else str(universidad_objetivo)
+    if university_name in UNIVERSITY_ALIASES:
+        aliases.extend(UNIVERSITY_ALIASES[university_name])
+    if institucion:
+        aliases.append(str(institucion))
+
+    for alias in aliases:
+        normalized_alias = _normalize_campus_text(alias)
+        if not normalized_alias:
+            continue
+        text = re.sub(rf"\b{re.escape(normalized_alias)}\b", " ", text)
+
+    text = re.sub(r"\s+", " ", text).strip()
+    return text
+
+
+def _extract_site_label(text: str, entidad: object = None) -> str:
+    matches: list[tuple[int, int, str]] = []
+    for label in SITE_LABELS:
+        match = re.search(rf"\b{re.escape(label)}\b", text)
+        if match:
+            matches.append((match.start(), len(label), label))
+
+    if matches:
+        matches.sort(key=lambda item: (item[0], item[1]))
+        return matches[-1][2]
+
+    entity_label = _normalize_campus_text(entidad)
+    if entity_label and re.search(rf"\b{re.escape(entity_label)}\b", text):
+        return entity_label
+
+    return text
+
+
+def _is_generic_campus_name(text: str, entidad: object = None) -> bool:
+    if not text:
+        return True
+
+    entity_label = _normalize_campus_text(entidad)
+    if entity_label and text == entity_label:
+        return True
+
+    return any(text.startswith(marker) for marker in GENERIC_CAMPUS_MARKERS)
+
+
+def normalize_campus_name(
+    value: object,
+    universidad_objetivo: object = None,
+    institucion: object = None,
+    entidad: object = None,
+) -> str:
+    text = _normalize_campus_text(value)
+    text = _strip_institution_tokens(
+        text,
+        universidad_objetivo=universidad_objetivo,
+        institucion=institucion,
+    )
+    text = _extract_site_label(text, entidad=entidad)
+    text = re.sub(r"\s+", " ", text).strip()
+
+    if not text:
+        text = _normalize_campus_text(entidad)
+
+    return text
+
+
+def standardize_campus_names(df: pd.DataFrame) -> pd.DataFrame:
+    if df.empty or "campus" not in df.columns:
+        return df.copy()
+
+    work_df = df.copy()
+    work_df["campus_normalizado"] = work_df.apply(
+        lambda row: normalize_campus_name(
+            row.get("campus"),
+            universidad_objetivo=row.get("universidad_objetivo"),
+            institucion=row.get("institucion"),
+            entidad=row.get("entidad"),
+        ),
+        axis=1,
+    )
+
+    if not {"universidad_objetivo", "entidad"}.issubset(work_df.columns):
+        return work_df
+
+    for (university_name, entity_name), group_df in work_df.groupby(
+        ["universidad_objetivo", "entidad"],
+        dropna=False,
+    ):
+        entity_key = _normalize_campus_text(entity_name)
+        specific_names = [
+            name
+            for name in group_df["campus_normalizado"].dropna().astype(str).unique().tolist()
+            if not _is_generic_campus_name(name, entity_name)
+        ]
+
+        anchor_name = (
+            INSTITUTION_STATE_ANCHORS.get(str(university_name), {}).get(entity_key)
+            if entity_key
+            else None
+        )
+        if anchor_name:
+            generic_mask = group_df["campus_normalizado"].map(
+                lambda value: _is_generic_campus_name(str(value), entity_name)
+            )
+            work_df.loc[group_df.index[generic_mask], "campus_normalizado"] = anchor_name
+            specific_names = [
+                name
+                for name in work_df.loc[group_df.index, "campus_normalizado"]
+                .dropna()
+                .astype(str)
+                .unique()
+                .tolist()
+                if not _is_generic_campus_name(name, entity_name)
+            ]
+
+        if len(specific_names) != 1:
+            continue
+
+        canonical_name = specific_names[0]
+        generic_mask = group_df["campus_normalizado"].map(
+            lambda value: _is_generic_campus_name(str(value), entity_name)
+        )
+        work_df.loc[group_df.index[generic_mask], "campus_normalizado"] = canonical_name
+
+    return work_df
 
 STATE_CENTROIDS = {
     "AGUASCALIENTES": {"lat": 21.8853, "lon": -102.2916},
@@ -363,7 +679,7 @@ def geocode_campus_points(
         & (campus_df["entidad"] != "")
         & (campus_df["campus"] != "")
     ].copy()
-    campus_df["campus_normalizado"] = campus_df["campus"].map(normalize_campus_name)
+    campus_df = standardize_campus_names(campus_df)
     campus_df = campus_df.drop_duplicates(
         subset=["universidad_objetivo", "entidad", "campus_normalizado"]
     )
