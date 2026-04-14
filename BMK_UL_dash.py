@@ -68,27 +68,45 @@ INSTITUTION_LOGOS = {
 st.markdown(
     f"""
     <style>
+        :root {{
+            --ul-black: #0a0a0a;
+            --ul-ink: #101828;
+            --ul-muted: #475467;
+            --ul-subtle: #667085;
+            --ul-border: rgba(15, 23, 42, 0.08);
+            --ul-surface: rgba(255, 255, 255, 0.88);
+            --ul-surface-strong: rgba(255, 255, 255, 0.94);
+            --ul-gold: #ffd100;
+            --ul-gold-soft: rgba(255, 209, 0, 0.14);
+            --ul-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+        }}
+
         .stApp {{
             background:
-                radial-gradient(circle at top left, rgba(194, 214, 255, 0.35), transparent 28%),
+                radial-gradient(circle at top left, rgba(255, 209, 0, 0.12), transparent 22%),
+                radial-gradient(circle at top right, rgba(194, 214, 255, 0.30), transparent 26%),
                 linear-gradient(180deg, #f7f6f2 0%, #f1efe7 100%);
         }}
 
         .block-container {{
-            padding-top: 2.5rem;
+            padding-top: 2.9rem;
         }}
 
         .ul-header {{
             width: 100%;
-            background: #000000;
-            min-height: 110px;
-            padding: 18px 28px;
-            border-radius: 0 0 18px 18px;
+            background:
+                linear-gradient(135deg, rgba(255,209,0,0.10), transparent 24%),
+                linear-gradient(180deg, #050505 0%, #111111 100%);
+            min-height: 126px;
+            padding: 22px 28px 20px;
+            border-radius: 0 0 22px 22px;
             display: flex;
             align-items: center;
             gap: 20px;
             box-sizing: border-box;
             margin-bottom: 28px;
+            border-bottom: 2px solid rgba(255, 209, 0, 0.26);
+            box-shadow: 0 18px 38px rgba(0, 0, 0, 0.22);
         }}
 
         .ul-header img {{
@@ -106,41 +124,148 @@ st.markdown(
 
         .ul-header-text h1 {{
             margin: 0;
-            font-size: 2rem;
+            font-size: 2.05rem;
             font-weight: 700;
+            letter-spacing: -0.02em;
         }}
 
         .ul-header-text p {{
-            margin: 6px 0 0 0;
+            margin: 8px 0 0 0;
             font-size: 0.95rem;
             color: #d6d6d6;
+            max-width: 920px;
+            line-height: 1.35;
+        }}
+
+        .brand-rail {{
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 12px;
+        }}
+
+        .brand-pill {{
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 0.34rem 0.72rem;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #f8fafc;
+            font-size: 0.78rem;
+            letter-spacing: 0.02em;
+        }}
+
+        .brand-pill.brand-accent {{
+            background: rgba(255, 209, 0, 0.16);
+            border-color: rgba(255, 209, 0, 0.28);
+            color: #fff6c2;
         }}
 
         .hero-card {{
-            background: rgba(255, 255, 255, 0.78);
-            border: 1px solid rgba(15, 23, 42, 0.08);
+            background: linear-gradient(180deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.82) 100%);
+            border: 1px solid var(--ul-border);
             border-radius: 22px;
-            padding: 1.4rem 1.4rem 1.1rem;
-            box-shadow: 0 20px 50px rgba(15, 23, 42, 0.08);
+            padding: 1.35rem 1.4rem 1.15rem;
+            box-shadow: var(--ul-shadow);
             margin-bottom: 1rem;
+            position: relative;
+            overflow: hidden;
+        }}
+
+        .hero-card::before {{
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--ul-gold) 0%, rgba(255, 209, 0, 0.28) 100%);
         }}
 
         .hero-card h2 {{
             margin: 0 0 0.4rem 0;
             font-size: 1.8rem;
-            color: #101828;
+            color: var(--ul-ink);
+            letter-spacing: -0.02em;
         }}
 
         .hero-card p {{
             margin: 0;
-            color: #475467;
+            color: var(--ul-muted);
             max-width: 900px;
+        }}
+
+        .stPlotlyChart {{
+            background: var(--ul-surface);
+            border: 1px solid var(--ul-border);
+            border-radius: 22px;
+            box-shadow: var(--ul-shadow);
+            padding: 0.3rem 0.3rem 0.15rem;
+            margin-bottom: 0.85rem;
+        }}
+
+        div[data-testid="stVerticalBlock"]:has(.map-zone-marker) .stPlotlyChart {{
+            background: transparent;
+            border: none;
+            border-radius: 0;
+            box-shadow: none;
+            padding: 0;
+            margin-bottom: 0.35rem;
+        }}
+
+        .map-zone-marker {{
+            display: none;
+        }}
+
+        div[data-testid="stMetric"] {{
+            background: var(--ul-surface-strong);
+            border: 1px solid var(--ul-border);
+            border-radius: 18px;
+            padding: 0.9rem 1rem;
+            box-shadow: 0 14px 30px rgba(15, 23, 42, 0.06);
+        }}
+
+        div[data-testid="stMetricLabel"] p {{
+            color: var(--ul-subtle);
+            font-size: 0.82rem;
+            letter-spacing: 0.02em;
+        }}
+
+        div[data-testid="stMetricValue"] {{
+            color: var(--ul-ink);
+        }}
+
+        div[data-testid="stSidebar"] {{
+            background:
+                radial-gradient(circle at top left, rgba(255, 209, 0, 0.10), transparent 22%),
+                linear-gradient(180deg, rgba(255,255,255,0.96) 0%, rgba(248,246,240,0.98) 100%);
+            border-right: 1px solid rgba(15, 23, 42, 0.06);
+        }}
+
+        div[data-testid="stSidebar"] .stButton button {{
+            background: #111111;
+            color: #ffffff;
+            border: 1px solid rgba(255, 209, 0, 0.28);
+            border-radius: 14px;
+        }}
+
+        div[data-testid="stSidebar"] .stButton button:hover {{
+            border-color: rgba(255, 209, 0, 0.52);
+            color: #fff7cc;
+        }}
+
+        div[data-testid="stSidebar"] label,
+        div[data-testid="stSidebar"] .stMarkdown,
+        div[data-testid="stSidebar"] p {{
+            color: var(--ul-ink);
         }}
 
         @media (max-width: 768px) {{
             .ul-header {{
                 padding: 16px 18px;
-                min-height: 90px;
+                min-height: 102px;
                 gap: 14px;
             }}
 
@@ -159,6 +284,11 @@ st.markdown(
         <div class="ul-header-text">
             <h1>Analisis Competitivo y Tendencias del Sector Educativo</h1>
             <p>Estudio integral del ecosistema educativo que permite evaluar posicionamiento, oferta academica y alineacion con las demandas del futuro.</p>
+            <div class="brand-rail">
+                <span class="brand-pill brand-accent">Universidad de la Libertad</span>
+                <span class="brand-pill">Iris Startup Lab</span>
+                <span class="brand-pill">Grupo Salinas</span>
+            </div>
         </div>
     </div>
     """,
@@ -173,7 +303,7 @@ st.markdown(
             border: 1px solid rgba(255, 255, 255, 0.12);
             border-radius: 18px;
             padding: 0.9rem 1rem;
-            box-shadow: 0 16px 34px rgba(15, 23, 42, 0.14);
+            box-shadow: 0 18px 36px rgba(15, 23, 42, 0.16);
             height: 176px;
             margin-bottom: 0.9rem;
             position: relative;
@@ -232,7 +362,33 @@ st.markdown(
             display: grid;
             grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 0.85rem;
-            margin: 0.2rem 0 1rem;
+            margin: 0.4rem 0 1.4rem;
+        }
+
+        .left-visual-gap {
+            height: 0.85rem;
+        }
+
+        .next-step-marker {
+            display: none;
+        }
+
+        div[data-testid="stVerticalBlock"]:has(.next-step-marker) div[data-testid="stButton"] > button {
+            min-height: 74px;
+            border-radius: 22px;
+            background: linear-gradient(135deg, #111111 0%, #1f1f1f 100%);
+            color: #ffffff;
+            border: 1px solid rgba(255, 209, 0, 0.36);
+            box-shadow: 0 18px 38px rgba(15, 23, 42, 0.14);
+            font-size: 1.2rem;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+        }
+
+        div[data-testid="stVerticalBlock"]:has(.next-step-marker) div[data-testid="stButton"] > button:hover {
+            border-color: rgba(255, 209, 0, 0.72);
+            box-shadow: 0 0 0 1px rgba(255, 209, 0, 0.22), 0 18px 38px rgba(15, 23, 42, 0.18);
+            color: #fff7cc;
         }
 
         .gender-stat-card {
@@ -325,6 +481,17 @@ st.markdown(
             font-size: 0.95rem;
         }
 
+        .state-list-card ul {
+            margin: 0.25rem 0 0.9rem 0;
+            padding-left: 1.1rem;
+            color: #344054;
+        }
+
+        .state-list-card li {
+            margin-bottom: 0.22rem;
+            line-height: 1.35;
+        }
+
         .benchmark-card {
             background: rgba(255, 255, 255, 0.9);
             border: 1px solid rgba(15, 23, 42, 0.08);
@@ -332,6 +499,16 @@ st.markdown(
             padding: 1rem;
             box-shadow: 0 16px 34px rgba(15, 23, 42, 0.08);
             margin-bottom: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .benchmark-card::before {
+            content: "";
+            position: absolute;
+            inset: 0 auto 0 0;
+            width: 4px;
+            background: linear-gradient(180deg, #ffd100 0%, rgba(255, 209, 0, 0.18) 100%);
         }
     </style>
     """,
@@ -462,6 +639,28 @@ cycle_options = (
 all_cycles = cycle_options["ciclo"].tolist()
 default_cycle_range = (all_cycles[0], all_cycles[-1])
 
+age_columns = {
+    "TOT_17": "≤17",
+    "TOT_18": "18",
+    "TOT_19": "19",
+    "TOT_20": "20",
+    "TOT_21": "21",
+    "TOT_22": "22",
+    "TOT_23": "23",
+    "TOT_24": "24",
+    "TOT_25": "25",
+    "TOT_26": "26",
+    "TOT_27": "27",
+    "TOT_28": "28",
+    "TOT_29": "29",
+    "TOT_30_34": "30-34",
+    "TOT_35_39": "35-39",
+    "TOT_40": "40+",
+}
+available_age_filter_options = [
+    label for column, label in age_columns.items() if column in raw_df.columns
+]
+
 selected_cycle_range = st.select_slider(
     "Rango de ciclos",
     options=all_cycles,
@@ -472,6 +671,12 @@ institution_options = sorted(raw_df["universidad_objetivo"].dropna().unique().to
 institution_default = institution_options
 
 with st.sidebar:
+    selected_sexo = st.selectbox(
+        "Sexo",
+        options=["Todos", "Hombres", "Mujeres"],
+        index=0,
+    )
+
     selected_institutions = st.multiselect(
         "Institucion",
         options=institution_options,
@@ -508,6 +713,19 @@ with st.sidebar:
             label_visibility="collapsed",
         )
 
+    with st.expander("Edad", expanded=False):
+        selected_edades = st.multiselect(
+            "Edad",
+            options=available_age_filter_options,
+            default=available_age_filter_options,
+            label_visibility="collapsed",
+        )
+
+selected_institutions = selected_institutions or institution_options
+selected_tipos = selected_tipos or tipo_options
+selected_campos = selected_campos or campo_options
+selected_edades = selected_edades or available_age_filter_options
+
 filtered_raw_df = raw_df.copy()
 selected_start_cycle, selected_end_cycle = selected_cycle_range
 selected_cycle_values = cycle_options.loc[
@@ -516,22 +734,56 @@ selected_cycle_values = cycle_options.loc[
     "ciclo",
 ].tolist()
 filtered_raw_df = filtered_raw_df.loc[filtered_raw_df["ciclo"].isin(selected_cycle_values)]
-if selected_institutions:
-    filtered_raw_df = filtered_raw_df.loc[
-        filtered_raw_df["universidad_objetivo"].isin(selected_institutions)
-    ]
-if selected_tipos:
-    filtered_raw_df = filtered_raw_df.loc[
-        filtered_raw_df["tipo_institucion"].isin(selected_tipos)
-    ]
-if selected_campos:
-    filtered_raw_df = filtered_raw_df.loc[
-        filtered_raw_df["campo_especifico"].isin(selected_campos)
-    ]
+filtered_raw_df = filtered_raw_df.loc[
+    filtered_raw_df["universidad_objetivo"].isin(selected_institutions)
+]
+filtered_raw_df = filtered_raw_df.loc[
+    filtered_raw_df["tipo_institucion"].isin(selected_tipos)
+]
+filtered_raw_df = filtered_raw_df.loc[
+    filtered_raw_df["campo_especifico"].isin(selected_campos)
+]
 
 if filtered_raw_df.empty:
     st.warning("No hay datos con los filtros seleccionados.")
     st.stop()
+
+selected_age_columns = [
+    column
+    for column, label in age_columns.items()
+    if label in selected_edades and column in filtered_raw_df.columns
+]
+all_age_columns_selected = set(selected_edades) == set(available_age_filter_options)
+
+if selected_age_columns:
+    filtered_raw_df["matricula_edad_filtrada"] = (
+        filtered_raw_df[selected_age_columns]
+        .fillna(0)
+        .sum(axis=1)
+    )
+else:
+    filtered_raw_df["matricula_edad_filtrada"] = filtered_raw_df["matricula_total"]
+
+sexo_col_map = {
+    "Todos": "matricula_total",
+    "Hombres": "matricula_hombres",
+    "Mujeres": "matricula_mujeres",
+}
+sexo_metric_column = sexo_col_map[selected_sexo]
+filtered_raw_df["matricula_sexo_filtrada"] = filtered_raw_df[sexo_metric_column].fillna(0)
+
+age_filter_active = bool(available_age_filter_options) and not all_age_columns_selected
+sexo_filter_active = selected_sexo != "Todos"
+
+if age_filter_active:
+    filtered_raw_df["matricula_visual"] = filtered_raw_df["matricula_edad_filtrada"]
+    selected_metric_label = "Matricula por edad seleccionada"
+elif sexo_filter_active:
+    filtered_raw_df["matricula_visual"] = filtered_raw_df["matricula_sexo_filtrada"]
+    selected_metric_label = f"Matricula de {selected_sexo.lower()}"
+else:
+    filtered_raw_df["matricula_visual"] = filtered_raw_df["matricula_total"]
+    selected_metric_label = "Matricula total"
 
 standardized_raw_df = standardize_campus_names(filtered_raw_df)
 
@@ -539,7 +791,7 @@ filtered_chart_df = (
     filtered_raw_df.groupby(
         ["universidad_objetivo", "ciclo_inicio", "ciclo"],
         as_index=False,
-    )["matricula_total"]
+    )["matricula_visual"]
     .sum()
     .sort_values(["ciclo_inicio", "universidad_objetivo"])
 )
@@ -550,15 +802,14 @@ if not filtered_campus_points_df.empty:
         filtered_campus_points_df = filtered_campus_points_df.loc[
             filtered_campus_points_df["ciclo"].isin(selected_cycle_values)
         ]
-    if selected_institutions:
-        filtered_campus_points_df = filtered_campus_points_df.loc[
-            filtered_campus_points_df["universidad_objetivo"].isin(selected_institutions)
-        ]
-    if selected_tipos and "tipo_institucion" in filtered_campus_points_df.columns:
+    filtered_campus_points_df = filtered_campus_points_df.loc[
+        filtered_campus_points_df["universidad_objetivo"].isin(selected_institutions)
+    ]
+    if "tipo_institucion" in filtered_campus_points_df.columns:
         filtered_campus_points_df = filtered_campus_points_df.loc[
             filtered_campus_points_df["tipo_institucion"].isin(selected_tipos)
         ]
-    if selected_campos and "campo_especifico" in filtered_campus_points_df.columns:
+    if "campo_especifico" in filtered_campus_points_df.columns:
         filtered_campus_points_df = filtered_campus_points_df.loc[
             filtered_campus_points_df["campo_especifico"].isin(selected_campos)
         ]
@@ -570,16 +821,16 @@ if not filtered_campus_points_df.empty:
 figure = px.line(
     filtered_chart_df,
     x="ciclo",
-    y="matricula_total",
+    y="matricula_visual",
     color="universidad_objetivo",
     markers=True,
     line_group="universidad_objetivo",
     color_discrete_sequence=px.colors.qualitative.Bold,
 )
 figure.update_layout(
-    title="Matricula total por institucion",
+    title=f"{selected_metric_label} por institucion",
     xaxis_title="Ciclo escolar",
-    yaxis_title="Matricula total",
+    yaxis_title=selected_metric_label,
     legend_title="Institucion",
     paper_bgcolor="rgba(0,0,0,0)",
     plot_bgcolor="rgba(255,255,255,0.72)",
@@ -587,15 +838,65 @@ figure.update_layout(
 )
 figure.update_traces(line=dict(width=3), marker=dict(size=8))
 
+cycle_total_df = (
+    filtered_chart_df.groupby(["ciclo_inicio", "ciclo"], as_index=False)["matricula_visual"]
+    .sum()
+    .sort_values("ciclo_inicio")
+)
+total_matriculados_mexico = int(filtered_raw_df["matricula_visual"].sum())
+avg_growth_pct = 0.0
+age_reference_values = {
+    "TOT_17": 17,
+    "TOT_18": 18,
+    "TOT_19": 19,
+    "TOT_20": 20,
+    "TOT_21": 21,
+    "TOT_22": 22,
+    "TOT_23": 23,
+    "TOT_24": 24,
+    "TOT_25": 25,
+    "TOT_26": 26,
+    "TOT_27": 27,
+    "TOT_28": 28,
+    "TOT_29": 29,
+    "TOT_30_34": 32,
+    "TOT_35_39": 37,
+    "TOT_40": 40,
+}
+if len(cycle_total_df) > 1:
+    cycle_total_df["growth_pct"] = cycle_total_df["matricula_visual"].pct_change()
+    valid_growth = cycle_total_df["growth_pct"].dropna()
+    if not valid_growth.empty:
+        avg_growth_pct = float(valid_growth.mean() * 100)
+
+available_age_average_columns = [
+    column for column in age_reference_values if column in filtered_raw_df.columns
+]
+weighted_age_sum = sum(
+    float(filtered_raw_df[column].fillna(0).sum()) * age_reference_values[column]
+    for column in available_age_average_columns
+)
+age_population_total = sum(
+    float(filtered_raw_df[column].fillna(0).sum())
+    for column in available_age_average_columns
+)
+average_age = (weighted_age_sum / age_population_total) if age_population_total else 0.0
+
 metric_1, metric_2, metric_3 = st.columns(3)
-metric_1.metric("Instituciones visibles", filtered_raw_df["universidad_objetivo"].nunique())
-metric_2.metric("Instituciones sin match", len(missing))
+metric_1.metric("Matriculados en Mexico", f"{total_matriculados_mexico:,}")
+metric_2.metric("Crecimiento promedio", f"{avg_growth_pct:.1f}%")
 metric_3.metric(
-    "Observaciones totales",
-    int(filtered_chart_df["matricula_total"].count()),
+    "Edad promedio",
+    f"{average_age:.1f} años",
 )
 
 st.plotly_chart(figure, use_container_width=True)
+
+if age_filter_active and sexo_filter_active:
+    st.caption(
+        "Sexo y edad se muestran como filtros independientes en ANUIES. "
+        "Cuando ambos estan activos, la vista principal prioriza la seleccion de edad."
+    )
 
 if data_source == "snapshot":
     st.caption("Fuente actual: snapshot procesado incluido en el proyecto.")
@@ -620,42 +921,84 @@ gender_df = pd.DataFrame(
 
 with gender_and_cards_left:
     share_df = (
-        filtered_raw_df.groupby("universidad_objetivo", as_index=False)["matricula_total"]
+        filtered_raw_df.groupby("universidad_objetivo", as_index=False)["matricula_visual"]
         .sum()
-        .sort_values("matricula_total", ascending=False)
+        .sort_values("matricula_visual", ascending=False)
     )
     share_fig = px.treemap(
         share_df,
         path=["universidad_objetivo"],
-        values="matricula_total",
+        values="matricula_visual",
         color="universidad_objetivo",
         color_discrete_map=INSTITUTION_COLORS,
     )
     share_fig.update_layout(
-        title="Share de matricula por institucion",
-        margin=dict(l=0, r=0, t=50, b=0),
+        title=f"Share de {selected_metric_label.lower()} por institucion",
+        margin=dict(l=18, r=18, t=60, b=18),
         paper_bgcolor="rgba(0,0,0,0)",
         showlegend=False,
     )
     share_fig.update_traces(
         texttemplate="<b>%{label}</b><br>%{percentRoot:.1%}",
         textfont_size=13,
-        hovertemplate="%{label}<br>Matricula: %{value:,}<br>Share: %{percentRoot:.1%}<extra></extra>",
+        hovertemplate="%{label}<br>Valor: %{value:,}<br>Share: %{percentRoot:.1%}<extra></extra>",
         marker_line_width=2,
         marker_line_color="rgba(255,255,255,0.65)",
     )
     st.plotly_chart(share_fig, use_container_width=True)
+    st.markdown('<div class="left-visual-gap"></div>', unsafe_allow_html=True)
 
     total_gender = float(gender_df["matricula"].sum())
     women_total = float(gender_summary.get("matricula_mujeres", 0))
     men_total = float(gender_summary.get("matricula_hombres", 0))
+
+    if age_filter_active:
+        total_base = float(filtered_raw_df["matricula_total"].fillna(0).sum())
+        selected_age_total = float(filtered_raw_df["matricula_edad_filtrada"].fillna(0).sum())
+        age_scale_factor = (selected_age_total / total_base) if total_base else 0.0
+        women_total *= age_scale_factor
+        men_total *= age_scale_factor
+    else:
+        age_scale_factor = 1.0
+
+    if sexo_filter_active and not age_filter_active:
+        if selected_sexo == "Hombres":
+            women_total = 0.0
+            total_gender = men_total
+        elif selected_sexo == "Mujeres":
+            men_total = 0.0
+            total_gender = women_total
+
     women_pct = (women_total / total_gender * 100) if total_gender else 0.0
     men_pct = (men_total / total_gender * 100) if total_gender else 0.0
 
+    gender_field_df = (
+        filtered_raw_df.groupby("campo_especifico", as_index=False)
+        .agg(
+            matricula_hombres=("matricula_hombres", "sum"),
+            matricula_mujeres=("matricula_mujeres", "sum"),
+            matricula_total=("matricula_total", "sum"),
+            matricula_edad_filtrada=("matricula_edad_filtrada", "sum"),
+        )
+    )
+    if age_filter_active:
+        gender_field_df["age_scale_factor"] = (
+            gender_field_df["matricula_edad_filtrada"]
+            .div(gender_field_df["matricula_total"].replace(0, pd.NA))
+            .fillna(0)
+        )
+        gender_field_df["matricula_hombres_ajustada"] = (
+            gender_field_df["matricula_hombres"] * gender_field_df["age_scale_factor"]
+        )
+        gender_field_df["matricula_mujeres_ajustada"] = (
+            gender_field_df["matricula_mujeres"] * gender_field_df["age_scale_factor"]
+        )
+    else:
+        gender_field_df["matricula_hombres_ajustada"] = gender_field_df["matricula_hombres"]
+        gender_field_df["matricula_mujeres_ajustada"] = gender_field_df["matricula_mujeres"]
+
     men_top_fields = (
-        filtered_raw_df.groupby("campo_especifico", as_index=False)["matricula_hombres"]
-        .sum()
-        .sort_values("matricula_hombres", ascending=False)
+        gender_field_df.sort_values("matricula_hombres_ajustada", ascending=False)
     )
     men_top_fields = [
         value
@@ -664,9 +1007,7 @@ with gender_and_cards_left:
     ][:3]
 
     women_top_fields = (
-        filtered_raw_df.groupby("campo_especifico", as_index=False)["matricula_mujeres"]
-        .sum()
-        .sort_values("matricula_mujeres", ascending=False)
+        gender_field_df.sort_values("matricula_mujeres_ajustada", ascending=False)
     )
     women_top_fields = [
         value
@@ -698,6 +1039,11 @@ with gender_and_cards_left:
         """,
         unsafe_allow_html=True,
     )
+    if age_filter_active:
+        st.caption(
+            "Los recuadros de sexo se ajustan proporcionalmente a la seleccion de edad activa."
+        )
+    st.markdown('<div class="left-visual-gap"></div>', unsafe_allow_html=True)
 
     age_columns = {
         "TOT_17": "≤17",
@@ -717,7 +1063,12 @@ with gender_and_cards_left:
         "TOT_35_39": "35-39",
         "TOT_40": "40+",
     }
-    available_age_columns = [column for column in age_columns if column in filtered_raw_df.columns]
+    available_age_columns = [
+        column
+        for column in age_columns
+        if column in filtered_raw_df.columns
+        and (not age_filter_active or age_columns[column] in selected_edades)
+    ]
     if available_age_columns:
         age_df = pd.DataFrame(
             {
@@ -737,7 +1088,7 @@ with gender_and_cards_left:
             )
             age_pie_fig.update_layout(
                 title="Distribucion de matricula por edad",
-                margin=dict(l=0, r=0, t=50, b=0),
+                margin=dict(l=14, r=14, t=56, b=14),
                 paper_bgcolor="rgba(0,0,0,0)",
                 legend_title="Edad",
             )
@@ -761,7 +1112,7 @@ campus_card_df = campus_card_df.loc[campus_card_df["campus"] != ""]
 institution_summary = (
     filtered_raw_df.groupby("universidad_objetivo", as_index=False)
     .agg(
-        matricula_total=("matricula_total", "sum"),
+        matricula_total=("matricula_visual", "sum"),
         tipo_institucion=("tipo_institucion", lambda values: next((v for v in values if str(v).strip()), "")),
     )
     .merge(
@@ -814,7 +1165,7 @@ with gender_and_cards_right:
                 <div class="institution-card{extra_class}" style="{extra_style}">
                     <div class="inst-type">{row["tipo_institucion"]}</div>
                     <div class="inst-name">{row["universidad_objetivo"]}</div>
-                    <div class="inst-metric">Matricula total: <strong>{int(row["matricula_total"]):,}</strong></div>
+                    <div class="inst-metric">{selected_metric_label}: <strong>{int(row["matricula_total"]):,}</strong></div>
                     <div class="inst-metric">Campus unicos: <strong>{int(row["campus_count"])}</strong></div>
                     {logo_html}
                 </div>
@@ -853,7 +1204,7 @@ def render_state_hover_panel(state_row: Optional[pd.Series]) -> None:
             <h4>{state_row.get("entidad", "")}</h4>
             <div class="state-metric">Campus unicos: <strong>{int(state_row.get("campus_count", 0))}</strong></div>
             <div class="state-metric">Cluster dominante: <strong>{state_row.get("cluster_campo", "Sin cluster")}</strong></div>
-            <div class="state-metric">Matricula total: <strong>{int(state_row.get("cluster_matricula", 0) or 0):,}</strong></div>
+            <div class="state-metric">{selected_metric_label}: <strong>{int(state_row.get("cluster_matricula", 0) or 0):,}</strong></div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -885,11 +1236,11 @@ if {"entidad", "campus", "universidad_objetivo"}.issubset(filtered_raw_df.column
     )
 
     state_cluster_df = (
-        filtered_raw_df.groupby(["entidad", "campo_especifico"], as_index=False)["matricula_total"]
+        filtered_raw_df.groupby(["entidad", "campo_especifico"], as_index=False)["matricula_visual"]
         .sum()
-        .sort_values(["entidad", "matricula_total"], ascending=[True, False])
+        .sort_values(["entidad", "matricula_visual"], ascending=[True, False])
         .drop_duplicates(subset=["entidad"])
-        .rename(columns={"campo_especifico": "cluster_campo", "matricula_total": "cluster_matricula"})
+        .rename(columns={"campo_especifico": "cluster_campo", "matricula_visual": "cluster_matricula"})
     )
     state_counts = state_counts.merge(
         state_cluster_df[["entidad", "cluster_campo", "cluster_matricula"]],
@@ -899,14 +1250,14 @@ if {"entidad", "campus", "universidad_objetivo"}.issubset(filtered_raw_df.column
     state_counts["cluster_campo"] = state_counts["cluster_campo"].fillna("Sin cluster")
 
     state_institutions_df = (
-        filtered_raw_df.groupby(["entidad", "universidad_objetivo"], as_index=False)["matricula_total"]
+        filtered_raw_df.groupby(["entidad", "universidad_objetivo"], as_index=False)["matricula_visual"]
         .sum()
-        .sort_values(["entidad", "matricula_total"], ascending=[True, False])
+        .sort_values(["entidad", "matricula_visual"], ascending=[True, False])
     )
     state_campos_df = (
-        filtered_raw_df.groupby(["entidad", "campo_especifico"], as_index=False)["matricula_total"]
+        filtered_raw_df.groupby(["entidad", "campo_especifico"], as_index=False)["matricula_visual"]
         .sum()
-        .sort_values(["entidad", "matricula_total"], ascending=[True, False])
+        .sort_values(["entidad", "matricula_visual"], ascending=[True, False])
     )
 
     centroids_df = pd.DataFrame(
@@ -965,10 +1316,10 @@ if {"entidad", "campus", "universidad_objetivo"}.issubset(filtered_raw_df.column
             opacity=0.72,
         )
         heatmap_fig.update_layout(
-            margin=dict(l=0, r=0, t=0, b=0),
+            margin=dict(l=52, r=52, t=44, b=44),
             map_style="carto-positron",
             coloraxis_colorbar_title="Campus",
-            height=760,
+            height=720,
         )
         if not selected_state_df.empty:
             selected_overlay_fig = px.choropleth_map(
@@ -989,6 +1340,7 @@ if {"entidad", "campus", "universidad_objetivo"}.issubset(filtered_raw_df.column
             )
             heatmap_fig.add_trace(selected_overlay_fig.data[0])
         with map_plot_col:
+            st.markdown('<div class="map-zone-marker"></div>', unsafe_allow_html=True)
             st.plotly_chart(heatmap_fig, use_container_width=True)
             st.caption("Selecciona un estado en el panel derecho para ver su detalle.")
     else:
@@ -1090,16 +1442,17 @@ if {"entidad", "campus", "universidad_objetivo"}.issubset(filtered_raw_df.column
             text=legend_html,
         )
         bubble_fig.update_layout(
-            margin=dict(l=0, r=0, t=0, b=0),
+            margin=dict(l=52, r=52, t=44, b=44),
             map=dict(
                 style="carto-positron",
                 center=dict(lat=23.5, lon=-102.0),
                 zoom=4.2,
             ),
-            height=760,
+            height=720,
             showlegend=False,
         )
         with map_plot_col:
+            st.markdown('<div class="map-zone-marker"></div>', unsafe_allow_html=True)
             st.plotly_chart(bubble_fig, use_container_width=True)
             st.caption("Selecciona un estado en el panel derecho para ver su detalle.")
 
@@ -1147,9 +1500,9 @@ else:
     st.info("El mapa aparecera despues de recargar la base con la nueva columna de entidad.")
 
 top_benchmark_df = (
-    filtered_raw_df.groupby("universidad_objetivo", as_index=False)["matricula_total"]
+    filtered_raw_df.groupby("universidad_objetivo", as_index=False)["matricula_visual"]
     .sum()
-    .sort_values("matricula_total", ascending=False)
+    .sort_values("matricula_visual", ascending=False)
 )
 
 if not top_benchmark_df.empty and "campo_especifico" in filtered_raw_df.columns:
@@ -1179,11 +1532,11 @@ if not top_benchmark_df.empty and "campo_especifico" in filtered_raw_df.columns:
     institution_field_df = (
         filtered_raw_df.loc[
             filtered_raw_df["universidad_objetivo"] == selected_benchmark_institution,
-            ["campo_especifico", "matricula_total"],
+            ["campo_especifico", "matricula_visual"],
         ]
-        .groupby("campo_especifico", as_index=False)["matricula_total"]
+        .groupby("campo_especifico", as_index=False)["matricula_visual"]
         .sum()
-        .sort_values("matricula_total", ascending=False)
+        .sort_values("matricula_visual", ascending=False)
         .head(8)
     )
 
@@ -1192,7 +1545,7 @@ if not top_benchmark_df.empty and "campo_especifico" in filtered_raw_df.columns:
             radar_df = institution_field_df.copy()
             radar_df["campo_corto"] = radar_df["campo_especifico"].astype(str)
             theta_values = radar_df["campo_corto"].tolist()
-            r_values = radar_df["matricula_total"].tolist()
+            r_values = radar_df["matricula_visual"].tolist()
             if theta_values and r_values:
                 theta_values = theta_values + [theta_values[0]]
                 r_values = r_values + [r_values[0]]
@@ -1227,7 +1580,7 @@ if not top_benchmark_df.empty and "campo_especifico" in filtered_raw_df.columns:
                 ),
                 paper_bgcolor="rgba(0,0,0,0)",
                 height=520,
-                margin=dict(l=20, r=20, t=60, b=20),
+                margin=dict(l=36, r=36, t=76, b=36),
                 showlegend=False,
             )
             st.plotly_chart(radar_fig, use_container_width=True)
@@ -1239,10 +1592,11 @@ with st.expander("Ver datos agregados del grafico"):
         filtered_raw_df.groupby(
             ["universidad_objetivo", "ciclo_inicio", "ciclo"],
             as_index=False,
-        )[["matricula_total", "egresados_total"]]
+        )[["matricula_visual", "egresados_total"]]
         .sum()
         .sort_values(["universidad_objetivo", "ciclo_inicio"])
     )
+    summary_df = summary_df.rename(columns={"matricula_visual": selected_metric_label})
     st.dataframe(
         summary_df,
         use_container_width=True,
@@ -1254,7 +1608,7 @@ with st.expander("Ver tabla total por institucion"):
         filtered_raw_df.groupby(
             ["universidad_objetivo", "ciclo_inicio", "ciclo"],
             as_index=False,
-        )[["matricula_total", "egresados_total"]]
+        )[["matricula_visual", "egresados_total"]]
         .sum()
         .sort_values(["universidad_objetivo", "ciclo_inicio"])
     )
@@ -1262,7 +1616,7 @@ with st.expander("Ver tabla total por institucion"):
         total_table.pivot(
             index="universidad_objetivo",
             columns="ciclo",
-            values="matricula_total",
+            values="matricula_visual",
         )
         .fillna(0)
         .reset_index()
@@ -1271,4 +1625,12 @@ with st.expander("Ver tabla total por institucion"):
         matricula_wide,
         use_container_width=True,
         hide_index=True,
+    )
+
+st.markdown('<div class="left-visual-gap"></div>', unsafe_allow_html=True)
+st.markdown('<div class="next-step-marker"></div>', unsafe_allow_html=True)
+if st.button("¿Qué Sigue?", use_container_width=True, key="next_steps_cta"):
+    st.info(
+        "Siguiente paso sugerido: profundizar en oferta academica, comparativos por campo especifico "
+        "y oportunidades de diferenciacion para Universidad de la Libertad."
     )
