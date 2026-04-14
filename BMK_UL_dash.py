@@ -29,7 +29,8 @@ st.set_page_config(
 
 
 LOGO_URL = "https://media.ulibertad.edu.mx/nimda/Umbraco/logo_ul_svg.svg"
-FUTURE_CAREERS_IMAGE = Path("/Users/patoescamilla/Downloads/ChatGPT Image 14 abr 2026, 07_27_31.png")
+BASE_DIR = Path(__file__).resolve().parent
+FUTURE_CAREERS_IMAGE = BASE_DIR / "ChatGPT Image 14 abr 2026, 07_27_31.png"
 MALE_ICON = """
 <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
   <circle cx="32" cy="18" r="10" fill="currentColor"/>
