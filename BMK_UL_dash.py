@@ -3,6 +3,7 @@ import plotly.graph_objects as go
 import pandas as pd
 import requests
 import streamlit as st
+from pathlib import Path
 from typing import Optional
 import BMK_UL as bmk_data
 
@@ -28,6 +29,7 @@ st.set_page_config(
 
 
 LOGO_URL = "https://media.ulibertad.edu.mx/nimda/Umbraco/logo_ul_svg.svg"
+FUTURE_CAREERS_IMAGE = Path("/Users/patoescamilla/Downloads/ChatGPT Image 14 abr 2026, 07_27_31.png")
 MALE_ICON = """
 <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
   <circle cx="32" cy="18" r="10" fill="currentColor"/>
@@ -63,6 +65,14 @@ INSTITUTION_LOGOS = {
     "Universidad Autónoma de Yucatán": "https://www.google.com/s2/favicons?domain=uady.mx&sz=128",
     "Universidad de la Libertad": "https://www.google.com/s2/favicons?domain=ulibertad.edu.mx&sz=128",
 }
+
+
+@st.dialog("¿Qué Sigue?", width="large")
+def show_next_steps_popup() -> None:
+    if FUTURE_CAREERS_IMAGE.exists():
+        st.image(str(FUTURE_CAREERS_IMAGE), width=1200)
+    else:
+        st.warning("No se encontro la imagen local para mostrar este contenido.")
 
 
 st.markdown(
@@ -509,6 +519,34 @@ st.markdown(
             inset: 0 auto 0 0;
             width: 4px;
             background: linear-gradient(180deg, #ffd100 0%, rgba(255, 209, 0, 0.18) 100%);
+        }
+
+        .sources-card {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(15, 23, 42, 0.08);
+            border-radius: 18px;
+            padding: 0.95rem 1rem;
+            box-shadow: 0 16px 34px rgba(15, 23, 42, 0.08);
+        }
+
+        .sources-card h5 {
+            margin: 0 0 0.55rem 0;
+            color: #101828;
+            font-size: 0.95rem;
+        }
+
+        .sources-card a {
+            display: block;
+            color: #1d4ed8;
+            text-decoration: none;
+            margin-bottom: 0.35rem;
+            line-height: 1.35;
+            word-break: break-word;
+            font-size: 0.84rem;
+        }
+
+        .sources-card a:hover {
+            text-decoration: underline;
         }
     </style>
     """,
@@ -1630,7 +1668,22 @@ with st.expander("Ver tabla total por institucion"):
 st.markdown('<div class="left-visual-gap"></div>', unsafe_allow_html=True)
 st.markdown('<div class="next-step-marker"></div>', unsafe_allow_html=True)
 if st.button("¿Qué Sigue?", use_container_width=True, key="next_steps_cta"):
-    st.info(
-        "Siguiente paso sugerido: profundizar en oferta academica, comparativos por campo especifico "
-        "y oportunidades de diferenciacion para Universidad de la Libertad."
+    show_next_steps_popup()
+
+st.markdown('<div class="left-visual-gap"></div>', unsafe_allow_html=True)
+sources_left, sources_right = st.columns([8, 4], vertical_alignment="bottom")
+with sources_right:
+    st.markdown(
+        """
+        <div class="sources-card">
+            <h5>Referencias</h5>
+            <a href="https://anuario.anuies.mx/historico.php" target="_blank">ANUIES: Historico de Educacion Superior</a>
+            <a href="https://reports.weforum.org/docs/WEF_Future_of_Jobs_Report_2025.pdf" target="_blank">WEF Future of Jobs Report 2025 PDF</a>
+            <a href="https://www.weforum.org/publications/the-future-of-jobs-report-2025/" target="_blank">World Economic Forum: The Future of Jobs Report 2025</a>
+            <a href="https://www.mckinsey.com/featured-insights/future-of-work" target="_blank">McKinsey: Future of Work</a>
+            <a href="https://www.deloitte.com/nl/en/services/consulting/research/human-capital-trends-report-2025.html" target="_blank">Deloitte Human Capital Trends Report 2025</a>
+            <a href="https://www.bcg.com/publications/topic/future-of-work" target="_blank">BCG: Future of Work</a>
+        </div>
+        """,
+        unsafe_allow_html=True,
     )
