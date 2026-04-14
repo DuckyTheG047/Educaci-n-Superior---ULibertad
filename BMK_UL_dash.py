@@ -75,7 +75,7 @@ st.markdown(
         }}
 
         .block-container {{
-            padding-top: 0;
+            padding-top: 2.5rem;
         }}
 
         .ul-header {{
@@ -157,8 +157,8 @@ st.markdown(
     <div class="ul-header">
         <img src="{LOGO_URL}" alt="Universidad Libertad">
         <div class="ul-header-text">
-            <h1>BMK UL</h1>
-            <p>Benchmark y analisis de datos</p>
+            <h1>Analisis Competitivo y Tendencias del Sector Educativo</h1>
+            <p>Estudio integral del ecosistema educativo que permite evaluar posicionamiento, oferta academica y alineacion con las demandas del futuro.</p>
         </div>
     </div>
     """,
@@ -323,6 +323,15 @@ st.markdown(
             margin: 0 0 0.55rem 0;
             color: #101828;
             font-size: 0.95rem;
+        }
+
+        .benchmark-card {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(15, 23, 42, 0.08);
+            border-radius: 18px;
+            padding: 1rem;
+            box-shadow: 0 16px 34px rgba(15, 23, 42, 0.08);
+            margin-bottom: 1rem;
         }
     </style>
     """,
@@ -1136,6 +1145,94 @@ if {"entidad", "campus", "universidad_objetivo"}.issubset(filtered_raw_df.column
             )
 else:
     st.info("El mapa aparecera despues de recargar la base con la nueva columna de entidad.")
+
+top_benchmark_df = (
+    filtered_raw_df.groupby("universidad_objetivo", as_index=False)["matricula_total"]
+    .sum()
+    .sort_values("matricula_total", ascending=False)
+)
+
+if not top_benchmark_df.empty and "campo_especifico" in filtered_raw_df.columns:
+    st.markdown(
+        """
+        <div class="benchmark-card">
+            <h3 style="margin:0;color:#101828;">Instituciones Lideres y Campos Relevantes</h3>
+            <p style="margin:0.35rem 0 0 0;color:#475467;">
+                Selecciona una institucion visible para ver su huella academica en los campos especificos mas relevantes.
+            </p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    benchmark_left, benchmark_right = st.columns([3, 7], vertical_alignment="top")
+    top_institutions = top_benchmark_df["universidad_objetivo"].tolist()
+
+    with benchmark_left:
+        selected_benchmark_institution = st.radio(
+            "Instituciones visibles",
+            options=top_institutions,
+            index=0,
+            label_visibility="visible",
+        )
+
+    institution_field_df = (
+        filtered_raw_df.loc[
+            filtered_raw_df["universidad_objetivo"] == selected_benchmark_institution,
+            ["campo_especifico", "matricula_total"],
+        ]
+        .groupby("campo_especifico", as_index=False)["matricula_total"]
+        .sum()
+        .sort_values("matricula_total", ascending=False)
+        .head(8)
+    )
+
+    with benchmark_right:
+        if not institution_field_df.empty:
+            radar_df = institution_field_df.copy()
+            radar_df["campo_corto"] = radar_df["campo_especifico"].astype(str)
+            theta_values = radar_df["campo_corto"].tolist()
+            r_values = radar_df["matricula_total"].tolist()
+            if theta_values and r_values:
+                theta_values = theta_values + [theta_values[0]]
+                r_values = r_values + [r_values[0]]
+            radar_fig = go.Figure()
+            radar_fig.add_trace(
+                go.Scatterpolar(
+                    r=r_values,
+                    theta=theta_values,
+                    fill="toself",
+                    name=selected_benchmark_institution,
+                    line=dict(
+                        color=INSTITUTION_COLORS.get(selected_benchmark_institution, "#2563EB"),
+                        width=3,
+                    ),
+                    fillcolor=INSTITUTION_COLORS.get(selected_benchmark_institution, "#2563EB"),
+                    opacity=0.45,
+                )
+            )
+            radar_fig.update_layout(
+                title=f"Top 8 campos especificos de {selected_benchmark_institution}",
+                polar=dict(
+                    radialaxis=dict(
+                        visible=True,
+                        showticklabels=True,
+                        gridcolor="rgba(15,23,42,0.12)",
+                    ),
+                    angularaxis=dict(
+                        gridcolor="rgba(15,23,42,0.08)",
+                        direction="clockwise",
+                    ),
+                    bgcolor="rgba(255,255,255,0.62)",
+                ),
+                paper_bgcolor="rgba(0,0,0,0)",
+                height=520,
+                margin=dict(l=20, r=20, t=60, b=20),
+                showlegend=False,
+            )
+            st.plotly_chart(radar_fig, use_container_width=True)
+        else:
+            st.info("No hay campos especificos suficientes para la institucion seleccionada.")
 
 with st.expander("Ver datos agregados del grafico"):
     summary_df = (
