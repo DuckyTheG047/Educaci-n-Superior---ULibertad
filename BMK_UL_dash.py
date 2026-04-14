@@ -231,21 +231,23 @@ st.markdown(
         }}
 
         div[data-testid="stMetric"] {{
-            background: var(--ul-surface-strong);
-            border: 1px solid var(--ul-border);
+            background: linear-gradient(180deg, #050505 0%, #121212 100%);
+            border: 1px solid rgba(255, 209, 0, 0.48);
             border-radius: 18px;
-            padding: 0.9rem 1rem;
-            box-shadow: 0 14px 30px rgba(15, 23, 42, 0.06);
+            padding: 0.95rem 1rem;
+            box-shadow:
+                0 18px 34px rgba(15, 23, 42, 0.18),
+                0 0 0 1px rgba(255, 209, 0, 0.10);
         }}
 
         div[data-testid="stMetricLabel"] p {{
-            color: var(--ul-subtle);
+            color: #ffffff;
             font-size: 0.82rem;
             letter-spacing: 0.02em;
         }}
 
         div[data-testid="stMetricValue"] {{
-            color: var(--ul-ink);
+            color: #fff8e1;
         }}
 
         div[data-testid="stSidebar"] {{
@@ -909,7 +911,10 @@ if len(cycle_total_df) > 1:
         avg_growth_pct = float(valid_growth.mean() * 100)
 
 available_age_average_columns = [
-    column for column in age_reference_values if column in filtered_raw_df.columns
+    column
+    for column in age_reference_values
+    if column in filtered_raw_df.columns
+    and (not selected_age_columns or column in selected_age_columns)
 ]
 weighted_age_sum = sum(
     float(filtered_raw_df[column].fillna(0).sum()) * age_reference_values[column]
