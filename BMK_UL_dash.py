@@ -231,23 +231,37 @@ st.markdown(
         }}
 
         div[data-testid="stMetric"] {{
-            background: linear-gradient(180deg, #050505 0%, #121212 100%);
-            border: 1px solid rgba(255, 209, 0, 0.48);
+            background: rgba(255, 255, 255, 0.96);
+            border: 1px solid rgba(0, 0, 0, 0.68);
             border-radius: 18px;
             padding: 0.95rem 1rem;
             box-shadow:
-                0 18px 34px rgba(15, 23, 42, 0.18),
-                0 0 0 1px rgba(255, 209, 0, 0.10);
+                0 18px 34px rgba(15, 23, 42, 0.10),
+                0 0 0 1px rgba(0, 0, 0, 0.05);
         }}
 
         div[data-testid="stMetricLabel"] p {{
-            color: #ffffff;
+            color: #111111;
             font-size: 0.82rem;
             letter-spacing: 0.02em;
         }}
 
+        div[data-testid="stMetricLabel"],
+        div[data-testid="stMetricLabel"] > div,
+        div[data-testid="stMetricLabel"] span,
+        div[data-testid="stMetricLabel"] label {{
+            color: #111111 !important;
+        }}
+
         div[data-testid="stMetricValue"] {{
-            color: #fff8e1;
+            color: #111111;
+        }}
+
+        div[data-testid="stMetricValue"] > div,
+        div[data-testid="stMetricValue"] span,
+        div[data-testid="stMetricDelta"],
+        div[data-testid="stMetricDelta"] span {{
+            color: #111111 !important;
         }}
 
         div[data-testid="stSidebar"] {{
