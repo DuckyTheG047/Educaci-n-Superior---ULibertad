@@ -4,17 +4,21 @@ import pandas as pd
 import requests
 import streamlit as st
 from typing import Optional
-from BMK_UL import (
-    INSTITUTION_COLORS,
-    STATE_CENTROIDS,
-    geocode_campus_points,
-    load_processed_snapshot,
-    load_campo_amplio_result,
-    normalize_campus_name,
-    save_processed_snapshot,
-    standardize_campus_names,
-    _normalize_text,
-)
+import BMK_UL as bmk_data
+
+
+def _fallback_normalize_text(value: object) -> str:
+    return "" if value is None else str(value).upper().strip()
+
+
+INSTITUTION_COLORS = getattr(bmk_data, "INSTITUTION_COLORS", {})
+STATE_CENTROIDS = getattr(bmk_data, "STATE_CENTROIDS", {})
+geocode_campus_points = getattr(bmk_data, "geocode_campus_points")
+load_processed_snapshot = getattr(bmk_data, "load_processed_snapshot")
+load_campo_amplio_result = getattr(bmk_data, "load_campo_amplio_result")
+save_processed_snapshot = getattr(bmk_data, "save_processed_snapshot", lambda raw_df, campus_points_df: None)
+standardize_campus_names = getattr(bmk_data, "standardize_campus_names", lambda df: df.copy())
+_normalize_text = getattr(bmk_data, "_normalize_text", _fallback_normalize_text)
 
 
 st.set_page_config(
