@@ -3,7 +3,7 @@ import plotly.graph_objects as go
 import pandas as pd
 import requests
 import streamlit as st
-
+from typing import Optional
 from BMK_UL import (
     INSTITUTION_COLORS,
     STATE_CENTROIDS,
@@ -24,6 +24,18 @@ st.set_page_config(
 
 
 LOGO_URL = "https://media.ulibertad.edu.mx/nimda/Umbraco/logo_ul_svg.svg"
+MALE_ICON = """
+<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <circle cx="32" cy="18" r="10" fill="currentColor"/>
+  <path d="M20 58V43c0-6.6 5.4-12 12-12s12 5.4 12 12v15h-7V45h-10v13z" fill="currentColor"/>
+</svg>
+"""
+FEMALE_ICON = """
+<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <circle cx="32" cy="16" r="10" fill="currentColor"/>
+  <path d="M32 28c8.8 0 16 7.2 16 16h-7v14h-6V48h-6v10h-6V44h-7c0-8.8 7.2-16 16-16z" fill="currentColor"/>
+</svg>
+"""
 INSTITUTION_LOGOS = {
     "Tecnológico de Monterrey": "https://www.google.com/s2/favicons?domain=tec.mx&sz=128",
     "Universidad Iberoamericana": "https://www.google.com/s2/favicons?domain=ibero.mx&sz=128",
@@ -35,7 +47,7 @@ INSTITUTION_LOGOS = {
     "Instituto Tecnológico y de Estudios Superiores de Occidente": "https://www.google.com/s2/favicons?domain=iteso.mx&sz=128",
     "Universidad Tecmilenio": "https://www.google.com/s2/favicons?domain=tecmilenio.mx&sz=128",
     "Universidad del Valle de México": "https://www.google.com/s2/favicons?domain=uvm.mx&sz=128",
-    "Universidad La Salle": "https://www.lasalle.mx/somos-la-salle/identidad/Code/templates/images/global/La-Salle-Placeholder-Small.jpg",
+    "Universidad La Salle": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/Logo_de_la_Universidad_La_Salle_sin_letras.svg/1280px-Logo_de_la_Universidad_La_Salle_sin_letras.svg.png",
     "Universidad Nacional Autónoma de México": "https://www.google.com/s2/favicons?domain=unam.mx&sz=128",
     "Instituto Politécnico Nacional": "https://www.google.com/s2/favicons?domain=ipn.mx&sz=128",
     "Universidad de Guadalajara": "https://www.google.com/s2/favicons?domain=udg.mx&sz=128",
@@ -158,10 +170,13 @@ st.markdown(
             border-radius: 18px;
             padding: 0.9rem 1rem;
             box-shadow: 0 16px 34px rgba(15, 23, 42, 0.14);
-            min-height: 156px;
+            height: 176px;
             margin-bottom: 0.9rem;
             position: relative;
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
         }
 
         .institution-card .inst-type {
@@ -177,7 +192,9 @@ st.markdown(
             font-size: 1rem;
             font-weight: 700;
             line-height: 1.2;
-            margin-bottom: 0.8rem;
+            margin-bottom: 0.85rem;
+            min-height: 2.45rem;
+            padding-right: 2.8rem;
         }
 
         .institution-card .inst-metric {
@@ -206,6 +223,103 @@ st.markdown(
             padding: 4px;
             box-shadow: 0 6px 14px rgba(0, 0, 0, 0.28);
         }
+
+        .gender-stat-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.85rem;
+            margin: 0.2rem 0 1rem;
+        }
+
+        .gender-stat-card {
+            background: rgba(255, 255, 255, 0.88);
+            border: 1px solid rgba(15, 23, 42, 0.08);
+            border-radius: 18px;
+            padding: 1rem 0.8rem;
+            text-align: center;
+            box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+        }
+
+        .gender-stat-icon {
+            width: 42px;
+            height: 42px;
+            margin: 0 auto 0.45rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 0.45rem;
+        }
+
+        .gender-stat-icon svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .gender-stat-label {
+            color: #475467;
+            font-size: 0.85rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .gender-stat-value {
+            color: #101828;
+            font-size: 1.4rem;
+            font-weight: 700;
+            line-height: 1.1;
+        }
+
+        .gender-stat-pct {
+            color: #667085;
+            font-size: 0.92rem;
+            margin-top: 0.2rem;
+        }
+
+        .gender-stat-top-fields {
+            margin-top: 0.55rem;
+            color: #475467;
+            font-size: 0.76rem;
+            line-height: 1.35;
+        }
+
+        .state-hover-card {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(15, 23, 42, 0.08);
+            border-radius: 18px;
+            padding: 1rem;
+            box-shadow: 0 16px 34px rgba(15, 23, 42, 0.08);
+            margin-bottom: 0.9rem;
+        }
+
+        .state-hover-card h4 {
+            margin: 0 0 0.55rem 0;
+            color: #101828;
+            font-size: 1.05rem;
+        }
+
+        .state-hover-card .state-metric {
+            color: #344054;
+            font-size: 0.9rem;
+            margin-bottom: 0.35rem;
+        }
+
+        .state-hover-card .state-metric strong {
+            color: #101828;
+        }
+
+        .state-list-card {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(15, 23, 42, 0.08);
+            border-radius: 18px;
+            padding: 1rem;
+            box-shadow: 0 16px 34px rgba(15, 23, 42, 0.08);
+        }
+
+        .state-list-card h5 {
+            margin: 0 0 0.55rem 0;
+            color: #101828;
+            font-size: 0.95rem;
+        }
     </style>
     """,
     unsafe_allow_html=True,
@@ -220,6 +334,13 @@ def load_dashboard_data(force_refresh: bool, schema_version: str) -> dict:
     if not force_refresh:
         snapshot_raw_df, snapshot_points_df = load_processed_snapshot()
         if not snapshot_raw_df.empty:
+            if snapshot_points_df.empty:
+                snapshot_points_df = geocode_campus_points(
+                    snapshot_raw_df,
+                    force_refresh=False,
+                    allow_online=False,
+                )
+                save_processed_snapshot(snapshot_raw_df, snapshot_points_df)
             summary_df = (
                 snapshot_raw_df.groupby(
                     ["universidad_objetivo", "ciclo_inicio", "ciclo"],
@@ -485,21 +606,85 @@ gender_df = pd.DataFrame(
 )
 
 with gender_and_cards_left:
-    pie_fig = px.pie(
-        gender_df,
-        names="grupo",
-        values="matricula",
-        color="grupo",
-        color_discrete_map={"Mujeres": "#C95C7B", "Hombres": "#3D6D99"},
-        hole=0.28,
+    share_df = (
+        filtered_raw_df.groupby("universidad_objetivo", as_index=False)["matricula_total"]
+        .sum()
+        .sort_values("matricula_total", ascending=False)
     )
-    pie_fig.update_layout(
-        title="Distribucion de matricula por genero",
+    share_fig = px.treemap(
+        share_df,
+        path=["universidad_objetivo"],
+        values="matricula_total",
+        color="universidad_objetivo",
+        color_discrete_map=INSTITUTION_COLORS,
+    )
+    share_fig.update_layout(
+        title="Share de matricula por institucion",
         margin=dict(l=0, r=0, t=50, b=0),
         paper_bgcolor="rgba(0,0,0,0)",
-        legend_title="",
+        showlegend=False,
     )
-    st.plotly_chart(pie_fig, use_container_width=True)
+    share_fig.update_traces(
+        texttemplate="<b>%{label}</b><br>%{percentRoot:.1%}",
+        textfont_size=13,
+        hovertemplate="%{label}<br>Matricula: %{value:,}<br>Share: %{percentRoot:.1%}<extra></extra>",
+        marker_line_width=2,
+        marker_line_color="rgba(255,255,255,0.65)",
+    )
+    st.plotly_chart(share_fig, use_container_width=True)
+
+    total_gender = float(gender_df["matricula"].sum())
+    women_total = float(gender_summary.get("matricula_mujeres", 0))
+    men_total = float(gender_summary.get("matricula_hombres", 0))
+    women_pct = (women_total / total_gender * 100) if total_gender else 0.0
+    men_pct = (men_total / total_gender * 100) if total_gender else 0.0
+
+    men_top_fields = (
+        filtered_raw_df.groupby("campo_especifico", as_index=False)["matricula_hombres"]
+        .sum()
+        .sort_values("matricula_hombres", ascending=False)
+    )
+    men_top_fields = [
+        value
+        for value in men_top_fields["campo_especifico"].astype(str).tolist()
+        if value and value.lower() != "nan"
+    ][:3]
+
+    women_top_fields = (
+        filtered_raw_df.groupby("campo_especifico", as_index=False)["matricula_mujeres"]
+        .sum()
+        .sort_values("matricula_mujeres", ascending=False)
+    )
+    women_top_fields = [
+        value
+        for value in women_top_fields["campo_especifico"].astype(str).tolist()
+        if value and value.lower() != "nan"
+    ][:3]
+
+    men_top_fields_html = "<br>".join(men_top_fields) if men_top_fields else "Sin datos suficientes"
+    women_top_fields_html = "<br>".join(women_top_fields) if women_top_fields else "Sin datos suficientes"
+
+    st.markdown(
+        f"""
+        <div class="gender-stat-grid">
+            <div class="gender-stat-card">
+                <div class="gender-stat-icon" style="color:#3D6D99;">{MALE_ICON}</div>
+                <div class="gender-stat-label">Hombres</div>
+                <div class="gender-stat-value">{int(men_total):,}</div>
+                <div class="gender-stat-pct">{men_pct:.1f}%</div>
+                <div class="gender-stat-top-fields">{men_top_fields_html}</div>
+            </div>
+            <div class="gender-stat-card">
+                <div class="gender-stat-icon" style="color:#C95C7B;">{FEMALE_ICON}</div>
+                <div class="gender-stat-label">Mujeres</div>
+                <div class="gender-stat-value">{int(women_total):,}</div>
+                <div class="gender-stat-pct">{women_pct:.1f}%</div>
+                <div class="gender-stat-top-fields">{women_top_fields_html}</div>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
     age_columns = {
         "TOT_17": "≤17",
@@ -529,21 +714,26 @@ with gender_and_cards_left:
         )
         age_df = age_df.loc[age_df["matricula"] > 0]
         if not age_df.empty:
-            age_df["grupo"] = "Edades"
-            treemap_fig = px.treemap(
+            age_pie_fig = px.pie(
                 age_df,
-                path=["grupo", "edad"],
+                names="edad",
                 values="matricula",
-                color="matricula",
-                color_continuous_scale="Blues",
+                hole=0.22,
+                color="edad",
+                color_discrete_sequence=px.colors.sequential.Blues_r,
             )
-            treemap_fig.update_layout(
+            age_pie_fig.update_layout(
                 title="Distribucion de matricula por edad",
                 margin=dict(l=0, r=0, t=50, b=0),
                 paper_bgcolor="rgba(0,0,0,0)",
-                coloraxis_colorbar_title="Matricula",
+                legend_title="Edad",
             )
-            st.plotly_chart(treemap_fig, use_container_width=True)
+            age_pie_fig.update_traces(
+                textposition="inside",
+                textinfo="percent",
+                hovertemplate="%{label}<br>Matricula: %{value:,}<br>Share: %{percent}<extra></extra>",
+            )
+            st.plotly_chart(age_pie_fig, use_container_width=True)
 
 campus_card_df = (
     standardized_raw_df[["universidad_objetivo", "tipo_institucion", "campus", "campus_normalizado"]]
@@ -630,6 +820,32 @@ with map_right:
         label_visibility="collapsed",
     )
 
+
+def render_state_hover_panel(state_row: Optional[pd.Series]) -> None:
+    if state_row is None:
+        st.markdown(
+            """
+            <div class="state-hover-card">
+                <h4>Detalle del estado</h4>
+                <div class="state-metric">Resumen del estado destacado con los filtros actuales.</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        return
+
+    st.markdown(
+        f"""
+        <div class="state-hover-card">
+            <h4>{state_row.get("entidad", "")}</h4>
+            <div class="state-metric">Campus unicos: <strong>{int(state_row.get("campus_count", 0))}</strong></div>
+            <div class="state-metric">Cluster dominante: <strong>{state_row.get("cluster_campo", "Sin cluster")}</strong></div>
+            <div class="state-metric">Matricula total: <strong>{int(state_row.get("cluster_matricula", 0) or 0):,}</strong></div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
 if {"entidad", "campus", "universidad_objetivo"}.issubset(filtered_raw_df.columns):
     campus_state_df = (
         standardized_raw_df[["universidad_objetivo", "entidad", "campus", "campus_normalizado"]]
@@ -655,6 +871,31 @@ if {"entidad", "campus", "universidad_objetivo"}.issubset(filtered_raw_df.column
         {"CIUDAD DE MEXICO": "CIUDAD DE MEXICO"}
     )
 
+    state_cluster_df = (
+        filtered_raw_df.groupby(["entidad", "campo_especifico"], as_index=False)["matricula_total"]
+        .sum()
+        .sort_values(["entidad", "matricula_total"], ascending=[True, False])
+        .drop_duplicates(subset=["entidad"])
+        .rename(columns={"campo_especifico": "cluster_campo", "matricula_total": "cluster_matricula"})
+    )
+    state_counts = state_counts.merge(
+        state_cluster_df[["entidad", "cluster_campo", "cluster_matricula"]],
+        on="entidad",
+        how="left",
+    )
+    state_counts["cluster_campo"] = state_counts["cluster_campo"].fillna("Sin cluster")
+
+    state_institutions_df = (
+        filtered_raw_df.groupby(["entidad", "universidad_objetivo"], as_index=False)["matricula_total"]
+        .sum()
+        .sort_values(["entidad", "matricula_total"], ascending=[True, False])
+    )
+    state_campos_df = (
+        filtered_raw_df.groupby(["entidad", "campo_especifico"], as_index=False)["matricula_total"]
+        .sum()
+        .sort_values(["entidad", "matricula_total"], ascending=[True, False])
+    )
+
     centroids_df = pd.DataFrame(
         [
             {"entidad_normalizada": state, "lat": coords["lat"], "lon": coords["lon"]}
@@ -662,6 +903,35 @@ if {"entidad", "campus", "universidad_objetivo"}.issubset(filtered_raw_df.column
         ]
     )
     state_map_df = state_counts.merge(centroids_df, on="entidad_normalizada", how="left")
+    map_plot_col, map_info_col = st.columns([8, 3], vertical_alignment="top")
+    default_state_key = (
+        state_map_df.sort_values("campus_count", ascending=False).iloc[0]["entidad_normalizada"]
+        if not state_map_df.empty
+        else None
+    )
+    selected_state_key = default_state_key
+    available_state_keys = state_map_df["entidad_normalizada"].tolist()
+    if selected_state_key not in available_state_keys:
+        selected_state_key = default_state_key
+
+    with map_info_col:
+        if not state_map_df.empty:
+            fallback_options = state_map_df.sort_values("entidad")["entidad_normalizada"].tolist()
+            selected_state_key = st.selectbox(
+                "Estado",
+                options=fallback_options,
+                index=fallback_options.index(default_state_key) if default_state_key in fallback_options else 0,
+                key="selected_state_key",
+                format_func=lambda key: state_map_df.loc[
+                    state_map_df["entidad_normalizada"] == key, "entidad"
+                ].iloc[0],
+            )
+
+    selected_state_df = state_map_df.loc[
+        state_map_df["entidad_normalizada"] == selected_state_key
+    ].copy()
+    if not selected_state_df.empty:
+        selected_state_df["estado_seleccionado"] = "Seleccionado"
 
     if map_mode == "Heatmap por entidad":
         heatmap_fig = px.choropleth_map(
@@ -685,20 +955,53 @@ if {"entidad", "campus", "universidad_objetivo"}.issubset(filtered_raw_df.column
             margin=dict(l=0, r=0, t=0, b=0),
             map_style="carto-positron",
             coloraxis_colorbar_title="Campus",
+            height=760,
         )
-        st.plotly_chart(heatmap_fig, use_container_width=True)
+        if not selected_state_df.empty:
+            selected_overlay_fig = px.choropleth_map(
+                selected_state_df,
+                geojson=mexico_geojson,
+                locations="entidad_normalizada",
+                featureidkey="properties.normalized_name",
+                color="estado_seleccionado",
+                color_discrete_map={"Seleccionado": "#00E5FF"},
+                center=dict(lat=23.5, lon=-102.0),
+                zoom=4.2,
+                opacity=0.88,
+            )
+            selected_overlay_fig.update_traces(
+                marker_line_width=2.5,
+                marker_line_color="#FFFFFF",
+                hoverinfo="skip",
+            )
+            heatmap_fig.add_trace(selected_overlay_fig.data[0])
+        with map_plot_col:
+            st.plotly_chart(heatmap_fig, use_container_width=True)
+            st.caption("Selecciona un estado en el panel derecho para ver su detalle.")
     else:
         bubble_df = filtered_campus_points_df.copy()
+        visible_clusters = [
+            cluster
+            for cluster in state_map_df["cluster_campo"].dropna().astype(str).unique().tolist()
+            if cluster
+        ]
+        cluster_palette = px.colors.qualitative.Bold
+        cluster_color_map = {
+            cluster: cluster_palette[idx % len(cluster_palette)]
+            for idx, cluster in enumerate(sorted(visible_clusters))
+        }
         bubble_fig = px.choropleth_map(
             state_map_df,
             geojson=mexico_geojson,
             locations="entidad_normalizada",
             featureidkey="properties.normalized_name",
-            color="campus_count",
-            color_continuous_scale="YlOrRd",
+            color="cluster_campo",
+            color_discrete_map=cluster_color_map,
             hover_name="entidad",
             hover_data={
                 "campus_count": True,
+                "cluster_campo": True,
+                "cluster_matricula": ":,.0f",
                 "instituciones": True,
                 "campus_list": False,
             },
@@ -706,6 +1009,24 @@ if {"entidad", "campus", "universidad_objetivo"}.issubset(filtered_raw_df.column
             zoom=4.2,
             opacity=0.35,
         )
+        if not selected_state_df.empty:
+            selected_overlay_fig = px.choropleth_map(
+                selected_state_df,
+                geojson=mexico_geojson,
+                locations="entidad_normalizada",
+                featureidkey="properties.normalized_name",
+                color="estado_seleccionado",
+                color_discrete_map={"Seleccionado": "#00E5FF"},
+                center={"lat": 23.5, "lon": -102.0},
+                zoom=4.2,
+                opacity=0.72,
+            )
+            selected_overlay_fig.update_traces(
+                marker_line_width=2.5,
+                marker_line_color="#FFFFFF",
+                hoverinfo="skip",
+            )
+            bubble_fig.add_trace(selected_overlay_fig.data[0])
         if not bubble_df.empty:
             for institution, institution_df in bubble_df.groupby("universidad_objetivo"):
                 bubble_fig.add_trace(
@@ -731,6 +1052,30 @@ if {"entidad", "campus", "universidad_objetivo"}.issubset(filtered_raw_df.column
                         ),
                     )
                 )
+        legend_html = "<br>".join(
+            [
+                "<span style='display:inline-flex;align-items:center;gap:8px;'>"
+                f"<span style='width:10px;height:10px;border-radius:50%;display:inline-block;background:{cluster_color_map[cluster]};'></span>"
+                f"{cluster}</span>"
+                for cluster in sorted(visible_clusters)
+            ]
+        )
+        bubble_fig.add_annotation(
+            x=0.01,
+            y=0.02,
+            xref="paper",
+            yref="paper",
+            xanchor="left",
+            yanchor="bottom",
+            align="left",
+            showarrow=False,
+            bgcolor="rgba(255,255,255,0.9)",
+            bordercolor="rgba(15,23,42,0.12)",
+            borderwidth=1,
+            borderpad=8,
+            font=dict(size=10, color="#111827"),
+            text=legend_html,
+        )
         bubble_fig.update_layout(
             margin=dict(l=0, r=0, t=0, b=0),
             map=dict(
@@ -738,15 +1083,53 @@ if {"entidad", "campus", "universidad_objetivo"}.issubset(filtered_raw_df.column
                 center=dict(lat=23.5, lon=-102.0),
                 zoom=4.2,
             ),
-            legend=dict(
-                orientation="h",
-                yanchor="bottom",
-                y=0.01,
-                xanchor="left",
-                x=0.01,
-            ),
+            height=760,
+            showlegend=False,
         )
-        st.plotly_chart(bubble_fig, use_container_width=True)
+        with map_plot_col:
+            st.plotly_chart(bubble_fig, use_container_width=True)
+            st.caption("Selecciona un estado en el panel derecho para ver su detalle.")
+
+    with map_info_col:
+        selected_state_row = None
+        if selected_state_key is not None:
+            match_df = state_map_df.loc[state_map_df["entidad_normalizada"] == selected_state_key]
+            if not match_df.empty:
+                selected_state_row = match_df.iloc[0]
+        render_state_hover_panel(selected_state_row)
+        if selected_state_row is not None:
+            selected_entity = selected_state_row.get("entidad", "")
+            top_institutions_state = (
+                state_institutions_df.loc[state_institutions_df["entidad"] == selected_entity]
+                .head(5)["universidad_objetivo"]
+                .tolist()
+            )
+            top_campos_state = (
+                state_campos_df.loc[state_campos_df["entidad"] == selected_entity]
+                .head(5)["campo_especifico"]
+                .tolist()
+            )
+            institutions_html = (
+                "".join([f"<li>{item}</li>" for item in top_institutions_state])
+                if top_institutions_state
+                else "<li>Sin datos.</li>"
+            )
+            campos_html = (
+                "".join([f"<li>{item}</li>" for item in top_campos_state])
+                if top_campos_state
+                else "<li>Sin datos.</li>"
+            )
+            st.markdown(
+                f"""
+                <div class="state-list-card">
+                    <h5>Instituciones</h5>
+                    <ul>{institutions_html}</ul>
+                    <h5>Top 5 Campos Especificos</h5>
+                    <ul>{campos_html}</ul>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
 else:
     st.info("El mapa aparecera despues de recargar la base con la nueva columna de entidad.")
 

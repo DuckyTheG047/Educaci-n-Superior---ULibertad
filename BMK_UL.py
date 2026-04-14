@@ -18,7 +18,7 @@ CACHE_SCHEMA_VERSION = "v2_entidad"
 SNAPSHOT_DIR = Path(__file__).resolve().parent / "data_snapshot"
 SNAPSHOT_DIR.mkdir(exist_ok=True)
 RAW_SNAPSHOT_FILE = SNAPSHOT_DIR / "raw_dataset.csv.gz"
-GEOCODED_SNAPSHOT_FILE = SNAPSHOT_DIR / "campus_points.csv.gz"
+GEOCODED_SNAPSHOT_FILE = SNAPSHOT_DIR / "campus_points_v2.csv.gz"
 
 CICLO_DESDE = "2020-2021"
 CICLO_HASTA = "2024-2025"
@@ -334,61 +334,6 @@ SITE_LABELS = [
     "VIRTUAL",
 ]
 
-INSTITUTION_STATE_ANCHORS = {
-    "Tecnológico de Monterrey": {
-        "NUEVO LEON": "MONTERREY",
-        "PUEBLA": "PUEBLA",
-        "VERACRUZ": "VERACRUZ",
-        "QUERETARO": "QUERETARO",
-    },
-    "Universidad La Salle": {
-        "CHIHUAHUA": "CHIHUAHUA",
-        "COAHUILA": "SALTILLO",
-        "DURANGO": "LAGUNA",
-        "HIDALGO": "PACHUCA",
-        "MICHOACAN": "MORELIA",
-        "MORELOS": "CUERNAVACA",
-        "MEXICO": "NEZAHUALCOYOTL",
-        "OAXACA": "OAXACA",
-        "PUEBLA": "BENAVENTE",
-        "QUINTANA ROO": "CANCUN",
-        "TAMAULIPAS": "VICTORIA",
-    },
-    "Universidad Iberoamericana": {
-        "CIUDAD DE MEXICO": "CIUDAD DE MEXICO",
-        "COAHUILA": "TORREON",
-        "NUEVO LEON": "MONTERREY",
-        "PUEBLA": "PUEBLA",
-    },
-    "Universidad Tecmilenio": {
-        "COLIMA": "COLIMA",
-        "COAHUILA": "LAGUNA",
-        "MORELOS": "CUERNAVACA",
-        "PUEBLA": "PUEBLA",
-        "QUINTANA ROO": "CANCUN",
-        "SAN LUIS POTOSI": "SAN LUIS POTOSI",
-        "TABASCO": "VILLAHERMOSA",
-        "VERACRUZ": "VERACRUZ",
-        "YUCATAN": "MERIDA",
-    },
-    "Universidad del Valle de México": {
-        "AGUASCALIENTES": "AGUASCALIENTES",
-        "BAJA CALIFORNIA": "MEXICALI",
-        "CHIAPAS": "TUXTLA",
-        "CHIHUAHUA": "CHIHUAHUA",
-        "MORELOS": "CUERNAVACA",
-        "PUEBLA": "PUEBLA",
-        "QUERETARO": "QUERETARO",
-        "TABASCO": "VILLA HERMOSA",
-        "YUCATAN": "MERIDA",
-    },
-    "Universidad Panamericana": {
-        "CIUDAD DE MEXICO": "CIUDAD DE MEXICO",
-        "JALISCO": "GUADALAJARA",
-        "MEXICO": "CIUDAD UP",
-    },
-}
-
 GENERIC_CAMPUS_MARKERS = [
     "DEPARTAMENTO DE",
     "FACULTAD DE",
@@ -483,6 +428,10 @@ def _is_generic_campus_name(text: str, entidad: object = None) -> bool:
     return any(text.startswith(marker) for marker in GENERIC_CAMPUS_MARKERS)
 
 
+def _has_academic_unit_marker(text: str) -> bool:
+    return any(marker in text for marker in GENERIC_CAMPUS_MARKERS)
+
+
 def normalize_campus_name(
     value: object,
     universidad_objetivo: object = None,
@@ -495,11 +444,14 @@ def normalize_campus_name(
         universidad_objetivo=universidad_objetivo,
         institucion=institucion,
     )
-    text = _extract_site_label(text, entidad=entidad)
-    text = re.sub(r"\s+", " ", text).strip()
 
     if not text:
         text = _normalize_campus_text(entidad)
+    elif _has_academic_unit_marker(text):
+        text = re.sub(r"\s+", " ", text).strip()
+    else:
+        text = _extract_site_label(text, entidad=entidad)
+        text = re.sub(r"\s+", " ", text).strip()
 
     return text
 
@@ -518,49 +470,6 @@ def standardize_campus_names(df: pd.DataFrame) -> pd.DataFrame:
         ),
         axis=1,
     )
-
-    if not {"universidad_objetivo", "entidad"}.issubset(work_df.columns):
-        return work_df
-
-    for (university_name, entity_name), group_df in work_df.groupby(
-        ["universidad_objetivo", "entidad"],
-        dropna=False,
-    ):
-        entity_key = _normalize_campus_text(entity_name)
-        specific_names = [
-            name
-            for name in group_df["campus_normalizado"].dropna().astype(str).unique().tolist()
-            if not _is_generic_campus_name(name, entity_name)
-        ]
-
-        anchor_name = (
-            INSTITUTION_STATE_ANCHORS.get(str(university_name), {}).get(entity_key)
-            if entity_key
-            else None
-        )
-        if anchor_name:
-            generic_mask = group_df["campus_normalizado"].map(
-                lambda value: _is_generic_campus_name(str(value), entity_name)
-            )
-            work_df.loc[group_df.index[generic_mask], "campus_normalizado"] = anchor_name
-            specific_names = [
-                name
-                for name in work_df.loc[group_df.index, "campus_normalizado"]
-                .dropna()
-                .astype(str)
-                .unique()
-                .tolist()
-                if not _is_generic_campus_name(name, entity_name)
-            ]
-
-        if len(specific_names) != 1:
-            continue
-
-        canonical_name = specific_names[0]
-        generic_mask = group_df["campus_normalizado"].map(
-            lambda value: _is_generic_campus_name(str(value), entity_name)
-        )
-        work_df.loc[group_df.index[generic_mask], "campus_normalizado"] = canonical_name
 
     return work_df
 
